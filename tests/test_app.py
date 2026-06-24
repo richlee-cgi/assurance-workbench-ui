@@ -14,6 +14,7 @@ def test_home_page() -> None:
     assert response.status_code == 200
     assert "Assurance Workbench" in response.text
     assert "Evidence pack runner" in response.text
+    assert "hx-post=\"/preview-command\"" in response.text
 
 
 def test_settings_page() -> None:
@@ -88,3 +89,27 @@ def test_check_dataverse_route(monkeypatch) -> None:
 
     assert response.status_code == 200
     assert "Dataverse check completed" in response.text
+
+
+def test_preview_command_route() -> None:
+    response = client.post(
+        "/preview-command",
+        data={
+            "topic": "booking allocation",
+            "preset": "architecture",
+            "sources": ["confluence", "azure"],
+            "confluence_space": "SPACE",
+            "azure_resource_group": "rg",
+            "limit": "15",
+            "refresh": "on",
+        },
+    )
+
+    assert response.status_code == 200
+    assert "Command preview" in response.text
+    assert "booking allocation" in response.text
+    assert "--preset architecture" in response.text
+    assert "--skip-jira" in response.text
+    assert "--include-azure" in response.text
+    assert "--azure-resource-group rg" in response.text
+    assert "--refresh" in response.text

@@ -212,6 +212,14 @@ pre {
   overflow-wrap: anywhere;
 }
 
+.command-preview {
+  margin: 10px 0 0;
+  padding: 12px;
+  border-radius: 6px;
+  background: #111827;
+  color: #f9fafb;
+}
+
 @media (max-width: 720px) {
   .site-header {
     align-items: flex-start;

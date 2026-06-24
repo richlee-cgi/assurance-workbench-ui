@@ -1,0 +1,11 @@
+{% if shell_command is defined %}
+  <div class="inline-result">
+    <strong>Command preview</strong>
+    <pre class="command-preview">{{ shell_command }}</pre>
+  </div>
+{% else %}
+  <div class="inline-result">
+    <strong>Command preview</strong>
+    <pre class="command-preview">assurance report evidence-pack --limit 10</pre>
+  </div>
+{% endif %}

@@ -4,13 +4,13 @@
 <section class="panel">
   <div class="section-header">
     <div>
-      <p class="eyebrow">Phase 1</p>
+      <p class="eyebrow">Phase 3</p>
       <h2>Evidence pack runner</h2>
     </div>
-    <span class="status-pill">Scaffold</span>
+    <span class="status-pill">Preview</span>
   </div>
 
-  <form class="grid-form">
+  <form id="evidence-form" class="grid-form" hx-post="/preview-command" hx-target="#command-preview" hx-swap="innerHTML" hx-trigger="change, keyup delay:300ms from:input">
     <label>
       Topic
       <input type="text" name="topic" placeholder="booking allocation">
@@ -26,17 +26,54 @@
       </select>
     </label>
 
+    <label>
+      Confluence space
+      <input type="text" name="confluence_space" value="{{ settings.confluence_space }}" placeholder="SPACE">
+    </label>
+
+    <label>
+      Jira project
+      <input type="text" name="jira_project" value="{{ settings.jira_project }}" placeholder="PROJ">
+    </label>
+
+    <label>
+      Azure resource group
+      <input type="text" name="azure_resource_group" value="{{ settings.azure_resource_group }}" placeholder="rg-example-dev">
+    </label>
+
+    <label>
+      Limit
+      <input type="number" name="limit" value="10" min="1">
+    </label>
+
     <fieldset>
       <legend>Sources</legend>
-      <label><input type="checkbox" name="source" value="confluence" checked> Confluence</label>
-      <label><input type="checkbox" name="source" value="jira" checked> Jira</label>
-      <label><input type="checkbox" name="source" value="azure"> Azure</label>
-      <label><input type="checkbox" name="source" value="dataverse"> Dataverse</label>
+      <label><input type="checkbox" name="sources" value="confluence" checked> Confluence</label>
+      <label><input type="checkbox" name="sources" value="jira" checked> Jira</label>
+      <label><input type="checkbox" name="sources" value="azure"> Azure</label>
+      <label><input type="checkbox" name="sources" value="dataverse"> Dataverse</label>
     </fieldset>
+
+    <fieldset>
+      <legend>Options</legend>
+      <label><input type="checkbox" name="include_comments"> Include Jira comments</label>
+      <label><input type="checkbox" name="refresh"> Refresh cache</label>
+      <label><input type="checkbox" name="no_cache"> No cache</label>
+    </fieldset>
+
+    <div class="form-actions">
+      <button type="button" hx-post="/preview-command" hx-include="#evidence-form" hx-target="#command-preview" hx-swap="innerHTML">
+        Preview command
+      </button>
+    </div>
   </form>
 
+  <div id="command-preview" class="fragment-slot" aria-live="polite">
+    {% include "partials/command_preview.html" %}
+  </div>
+
   <div class="notice">
-    Command preview and execution will be added in the next phase. This first slice verifies the local app shell, templates and static assets.
+    This preview does not run the command yet. Execution and Workbench run folders are next.
   </div>
 </section>
 {% endblock %}

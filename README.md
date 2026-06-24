@@ -36,6 +36,7 @@ Implemented first slice:
 - Settings page with local persistence.
 - Assurance CLI health check.
 - Azure and Dataverse CLI health checks through `assurance-cli`.
+- Evidence-pack form with HTMX command preview.
 - Health endpoint.
 - Route tests.
 
@@ -43,7 +44,7 @@ Not implemented yet:
 
 - Running `assurance-cli`.
 - Persisting Workbench runs.
-- Evidence pack form.
+- Running evidence-pack commands.
 - Results viewer.
 - Deterministic analysis.
 

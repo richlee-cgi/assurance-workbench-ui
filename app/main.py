@@ -8,6 +8,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
 from app.cli import check_assurance_cli, check_azure, check_dataverse
+from app.evidence import build_evidence_command, evidence_form_from_data, shell_command
 from app.settings import load_settings, save_settings, settings_from_form
 
 BASE_DIR = Path(__file__).resolve().parent
@@ -20,12 +21,14 @@ templates = Jinja2Templates(directory=BASE_DIR / "templates")
 
 @app.get("/", response_class=HTMLResponse)
 def home(request: Request) -> HTMLResponse:
+    current_settings = load_settings()
     return templates.TemplateResponse(
         request,
         "home.html",
         {
             "active_nav": "home",
             "title": "Assurance Workbench",
+            "settings": current_settings,
         },
     )
 
@@ -97,6 +100,21 @@ async def check_dataverse_route(request: Request) -> HTMLResponse:
         "partials/cli_check_result.html",
         {
             "result": result,
+        },
+    )
+
+
+@app.post("/preview-command", response_class=HTMLResponse)
+async def preview_command_route(request: Request) -> HTMLResponse:
+    form_data = await request.form()
+    form = evidence_form_from_data(form_data, load_settings())
+    command = build_evidence_command(form)
+    return templates.TemplateResponse(
+        request,
+        "partials/command_preview.html",
+        {
+            "command": command,
+            "shell_command": shell_command(command),
         },
     )
 
