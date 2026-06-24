@@ -47,6 +47,12 @@ Not implemented yet:
 
 ## HTMX Asset Strategy
 
-The template references `/static/vendor/htmx.min.js` so the app can work offline on corporate machines. The checked-in file is a placeholder until the real HTMX distribution file is vendored.
+The template references `/static/vendor/htmx.min.js` so the app can work offline on corporate machines.
 
-Before relying on HTMX interactions, replace `app/static/vendor/htmx.min.js` with an official `htmx.min.js` release.
+Vendored asset:
+
+- Package: `htmx.org`
+- Version: `2.0.10`
+- Source: `https://unpkg.com/htmx.org@2.0.10/dist/htmx.min.js`
+
+Update the vendored file manually when upgrading HTMX.

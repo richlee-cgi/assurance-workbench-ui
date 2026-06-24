@@ -27,3 +27,11 @@ def test_health() -> None:
 
     assert response.status_code == 200
     assert response.json() == {"status": "ok"}
+
+
+def test_htmx_asset_is_served() -> None:
+    response = client.get("/static/vendor/htmx.min.js")
+
+    assert response.status_code == 200
+    assert "var htmx" in response.text
+    assert len(response.text) > 10_000
