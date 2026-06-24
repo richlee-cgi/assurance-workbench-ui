@@ -207,6 +207,28 @@ fieldset input {
   overflow-wrap: anywhere;
 }
 
+.result-list {
+  display: grid;
+  gap: 8px;
+  margin: 12px 0 0;
+}
+
+.result-list div {
+  display: grid;
+  grid-template-columns: 120px minmax(0, 1fr);
+  gap: 12px;
+}
+
+.result-list dt {
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.result-list dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
 pre {
   white-space: pre-wrap;
   overflow-wrap: anywhere;

@@ -1,6 +1,7 @@
 from fastapi.testclient import TestClient
 
 from app.cli import CliCheckResult
+from app.evidence import EvidenceRunResult
 from app.main import app
 from app.settings import SETTINGS_PATH_ENV
 
@@ -113,3 +114,28 @@ def test_preview_command_route() -> None:
     assert "--include-azure" in response.text
     assert "--azure-resource-group rg" in response.text
     assert "--refresh" in response.text
+
+
+def test_run_evidence_pack_route(monkeypatch, tmp_path) -> None:
+    run_dir = tmp_path / "runs" / "run"
+    evidence_path = run_dir / "evidence-pack.md"
+    run_dir.mkdir(parents=True)
+    evidence_path.write_text("# Evidence\n", encoding="utf-8")
+
+    def fake_run(form, settings):
+        return EvidenceRunResult(
+            run_dir=run_dir,
+            command=["/tmp/assurance", "report", "evidence-pack", "booking", "--out", str(evidence_path)],
+            exit_code=0,
+            stdout="done",
+            stderr="",
+            evidence_path=evidence_path,
+        )
+
+    monkeypatch.setattr("app.main.run_evidence_pack", fake_run)
+
+    response = client.post("/run-evidence-pack", data={"topic": "booking", "sources": ["confluence"]})
+
+    assert response.status_code == 200
+    assert "Run completed" in response.text
+    assert str(evidence_path) in response.text

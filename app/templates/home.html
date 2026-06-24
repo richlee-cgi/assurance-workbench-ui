@@ -11,6 +11,8 @@
   </div>
 
   <form id="evidence-form" class="grid-form" hx-post="/preview-command" hx-target="#command-preview" hx-swap="innerHTML" hx-trigger="change, keyup delay:300ms from:input">
+    <input type="hidden" name="sources_present" value="1">
+
     <label>
       Topic
       <input type="text" name="topic" placeholder="booking allocation">
@@ -65,6 +67,9 @@
       <button type="button" hx-post="/preview-command" hx-include="#evidence-form" hx-target="#command-preview" hx-swap="innerHTML">
         Preview command
       </button>
+      <button type="button" hx-post="/run-evidence-pack" hx-include="#evidence-form" hx-target="#run-result" hx-swap="innerHTML">
+        Run evidence pack
+      </button>
     </div>
   </form>
 
@@ -72,8 +77,10 @@
     {% include "partials/command_preview.html" %}
   </div>
 
+  <div id="run-result" class="fragment-slot" aria-live="polite"></div>
+
   <div class="notice">
-    This preview does not run the command yet. Execution and Workbench run folders are next.
+    Running creates a timestamped folder under the configured Workbench evidence root and captures request metadata, command, logs and output.
   </div>
 </section>
 {% endblock %}

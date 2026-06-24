@@ -8,7 +8,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
 from app.cli import check_assurance_cli, check_azure, check_dataverse
-from app.evidence import build_evidence_command, evidence_form_from_data, shell_command
+from app.evidence import build_evidence_command, evidence_form_from_data, run_evidence_pack, shell_command
 from app.settings import load_settings, save_settings, settings_from_form
 
 BASE_DIR = Path(__file__).resolve().parent
@@ -115,6 +115,22 @@ async def preview_command_route(request: Request) -> HTMLResponse:
         {
             "command": command,
             "shell_command": shell_command(command),
+        },
+    )
+
+
+@app.post("/run-evidence-pack", response_class=HTMLResponse)
+async def run_evidence_pack_route(request: Request) -> HTMLResponse:
+    form_data = await request.form()
+    current_settings = load_settings()
+    form = evidence_form_from_data(form_data, current_settings)
+    result = run_evidence_pack(form, current_settings)
+    return templates.TemplateResponse(
+        request,
+        "partials/run_result.html",
+        {
+            "result": result,
+            "shell_command": shell_command(result.command),
         },
     )
 

@@ -1,0 +1,27 @@
+<div class="inline-result {{ 'success' if result.exit_code == 0 else 'error' }}">
+  <strong>{{ 'Run completed' if result.exit_code == 0 else 'Run failed' }}</strong>
+  <div class="command-line">{{ shell_command }}</div>
+  <dl class="result-list">
+    <div>
+      <dt>Exit code</dt>
+      <dd>{{ result.exit_code }}</dd>
+    </div>
+    <div>
+      <dt>Run folder</dt>
+      <dd>{{ result.run_dir }}</dd>
+    </div>
+    <div>
+      <dt>Evidence file</dt>
+      <dd>{{ result.evidence_path }}</dd>
+    </div>
+  </dl>
+  {% if result.timed_out %}
+    <p>Command timed out.</p>
+  {% endif %}
+  {% if result.stderr %}
+    <details>
+      <summary>Error output</summary>
+      <pre>{{ result.stderr }}</pre>
+    </details>
+  {% endif %}
+</div>
