@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="panel">
+  <div class="section-header">
+    <div>
+      <p class="eyebrow">Phase 1</p>
+      <h2>Evidence pack runner</h2>
+    </div>
+    <span class="status-pill">Scaffold</span>
+  </div>
+
+  <form class="grid-form">
+    <label>
+      Topic
+      <input type="text" name="topic" placeholder="booking allocation">
+    </label>
+
+    <label>
+      Preset
+      <select name="preset">
+        <option value="">None</option>
+        <option value="architecture">Architecture</option>
+        <option value="dataverse">Dataverse</option>
+        <option value="scaling">Scaling</option>
+      </select>
+    </label>
+
+    <fieldset>
+      <legend>Sources</legend>
+      <label><input type="checkbox" name="source" value="confluence" checked> Confluence</label>
+      <label><input type="checkbox" name="source" value="jira" checked> Jira</label>
+      <label><input type="checkbox" name="source" value="azure"> Azure</label>
+      <label><input type="checkbox" name="source" value="dataverse"> Dataverse</label>
+    </fieldset>
+  </form>
+
+  <div class="notice">
+    Command preview and execution will be added in the next phase. This first slice verifies the local app shell, templates and static assets.
+  </div>
+</section>
+{% endblock %}

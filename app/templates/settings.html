@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="panel">
+  <div class="section-header">
+    <div>
+      <p class="eyebrow">Local only</p>
+      <h2>Settings</h2>
+    </div>
+    <span class="status-pill">Not saved yet</span>
+  </div>
+
+  <form class="grid-form">
+    <label>
+      Assurance executable
+      <input type="text" name="assurance_path" placeholder="/path/to/assurance-cli/.venv/bin/assurance">
+    </label>
+
+    <label>
+      Workbench evidence root
+      <input type="text" name="workbench_root" placeholder="/path/to/Workbench/30 Workbenches/.../02-Evidence">
+    </label>
+
+    <label>
+      Default Confluence space
+      <input type="text" name="confluence_space" placeholder="SPACE">
+    </label>
+
+    <label>
+      Default Jira project
+      <input type="text" name="jira_project" placeholder="PROJ">
+    </label>
+
+    <label>
+      Default Azure resource group
+      <input type="text" name="azure_resource_group" placeholder="rg-example-dev">
+    </label>
+  </form>
+
+  <div class="notice">
+    Settings persistence and CLI health checks will be added in Phase 2. Do not store credentials in this UI.
+  </div>
+</section>
+{% endblock %}

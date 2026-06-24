@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ title }} - Assurance Workbench</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='/css/app.css') }}">
+    <script src="{{ url_for('static', path='/vendor/htmx.min.js') }}" defer></script>
+  </head>
+  <body>
+    <header class="site-header">
+      <div>
+        <p class="eyebrow">Local evidence UI</p>
+        <h1>Assurance Workbench</h1>
+      </div>
+      <nav aria-label="Primary">
+        <a href="/" class="{{ 'active' if active_nav == 'home' else '' }}">Run</a>
+        <a href="/settings" class="{{ 'active' if active_nav == 'settings' else '' }}">Settings</a>
+      </nav>
+    </header>
+
+    <main class="page-shell">
+      {% block content %}{% endblock %}
+    </main>
+  </body>
+</html>
