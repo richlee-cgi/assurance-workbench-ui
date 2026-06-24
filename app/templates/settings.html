@@ -7,38 +7,48 @@
       <p class="eyebrow">Local only</p>
       <h2>Settings</h2>
     </div>
-    <span class="status-pill">Not saved yet</span>
+    <span class="status-pill">Local file</span>
   </div>
 
-  <form class="grid-form">
+  <form id="settings-form" class="grid-form" hx-post="/settings" hx-target="#settings-status" hx-swap="innerHTML">
     <label>
       Assurance executable
-      <input type="text" name="assurance_path" placeholder="/path/to/assurance-cli/.venv/bin/assurance">
+      <input type="text" name="assurance_path" value="{{ settings.assurance_path }}" placeholder="/path/to/assurance-cli/.venv/bin/assurance">
     </label>
 
     <label>
       Workbench evidence root
-      <input type="text" name="workbench_root" placeholder="/path/to/Workbench/30 Workbenches/.../02-Evidence">
+      <input type="text" name="workbench_root" value="{{ settings.workbench_root }}" placeholder="/path/to/Workbench/30 Workbenches/.../02-Evidence">
     </label>
 
     <label>
       Default Confluence space
-      <input type="text" name="confluence_space" placeholder="SPACE">
+      <input type="text" name="confluence_space" value="{{ settings.confluence_space }}" placeholder="SPACE">
     </label>
 
     <label>
       Default Jira project
-      <input type="text" name="jira_project" placeholder="PROJ">
+      <input type="text" name="jira_project" value="{{ settings.jira_project }}" placeholder="PROJ">
     </label>
 
     <label>
       Default Azure resource group
-      <input type="text" name="azure_resource_group" placeholder="rg-example-dev">
+      <input type="text" name="azure_resource_group" value="{{ settings.azure_resource_group }}" placeholder="rg-example-dev">
     </label>
+
+    <div class="form-actions">
+      <button type="submit">Save settings</button>
+      <button type="button" hx-post="/settings/check-assurance" hx-include="#settings-form" hx-target="#cli-check-result" hx-swap="innerHTML">
+        Check assurance CLI
+      </button>
+    </div>
   </form>
 
+  <div id="settings-status" class="fragment-slot" aria-live="polite"></div>
+  <div id="cli-check-result" class="fragment-slot" aria-live="polite"></div>
+
   <div class="notice">
-    Settings persistence and CLI health checks will be added in Phase 2. Do not store credentials in this UI.
+    Settings are stored in a local ignored file. Do not store credentials in this UI.
   </div>
 </section>
 {% endblock %}

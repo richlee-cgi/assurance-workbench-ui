@@ -1,0 +1,16 @@
+<div class="inline-result {{ 'success' if result.ok else 'error' }}">
+  <strong>{{ result.message }}</strong>
+  <div class="command-line">{{ " ".join(result.command) }}</div>
+  {% if result.stdout %}
+    <details>
+      <summary>Output</summary>
+      <pre>{{ result.stdout }}</pre>
+    </details>
+  {% endif %}
+  {% if result.stderr %}
+    <details>
+      <summary>Error output</summary>
+      <pre>{{ result.stderr }}</pre>
+    </details>
+  {% endif %}
+</div>

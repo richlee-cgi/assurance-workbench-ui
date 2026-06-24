@@ -33,7 +33,8 @@ Implemented first slice:
 - Jinja templates.
 - HTMX-ready static layout.
 - Home page.
-- Settings page shell.
+- Settings page with local persistence.
+- Assurance CLI health check.
 - Health endpoint.
 - Route tests.
 
@@ -44,6 +45,20 @@ Not implemented yet:
 - Evidence pack form.
 - Results viewer.
 - Deterministic analysis.
+
+## Settings
+
+Settings are stored locally in `.assurance-workbench-ui.json`, which is ignored by Git.
+
+Stored values:
+
+- `assurance_path`
+- `workbench_root`
+- `confluence_space`
+- `jira_project`
+- `azure_resource_group`
+
+The UI does not store API tokens or credentials.
 
 ## HTMX Asset Strategy
 
