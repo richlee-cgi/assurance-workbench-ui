@@ -35,6 +35,7 @@ Implemented first slice:
 - Home page.
 - Settings page with local persistence.
 - Assurance CLI health check.
+- Azure and Dataverse CLI health checks through `assurance-cli`.
 - Health endpoint.
 - Route tests.
 

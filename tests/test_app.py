@@ -1,5 +1,6 @@
 from fastapi.testclient import TestClient
 
+from app.cli import CliCheckResult
 from app.main import app
 from app.settings import SETTINGS_PATH_ENV
 
@@ -63,3 +64,27 @@ def test_check_assurance_route_reports_missing_path() -> None:
 
     assert response.status_code == 200
     assert "Unable to run assurance" in response.text
+
+
+def test_check_azure_route(monkeypatch) -> None:
+    monkeypatch.setattr(
+        "app.main.check_azure",
+        lambda path: CliCheckResult(ok=True, command=[path, "azure", "check"], message="Azure check completed."),
+    )
+
+    response = client.post("/settings/check-azure", data={"assurance_path": "/tmp/assurance"})
+
+    assert response.status_code == 200
+    assert "Azure check completed" in response.text
+
+
+def test_check_dataverse_route(monkeypatch) -> None:
+    monkeypatch.setattr(
+        "app.main.check_dataverse",
+        lambda path: CliCheckResult(ok=True, command=[path, "dataverse", "check"], message="Dataverse check completed."),
+    )
+
+    response = client.post("/settings/check-dataverse", data={"assurance_path": "/tmp/assurance"})
+
+    assert response.status_code == 200
+    assert "Dataverse check completed" in response.text
