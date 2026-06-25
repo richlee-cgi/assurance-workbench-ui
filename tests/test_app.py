@@ -31,6 +31,9 @@ def test_settings_page() -> None:
     assert "Workbench evidence root" in response.text
     assert "Default repo roots" in response.text
     assert "hx-post=\"/settings\"" in response.text
+    assert "id=\"cli-check-spinner\"" in response.text
+    assert "data-cli-check-button" in response.text
+    assert "htmx:beforeRequest" in response.text
 
 
 def test_health() -> None:

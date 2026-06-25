@@ -47,15 +47,16 @@
 
     <div class="form-actions">
       <button type="submit">Save settings</button>
-      <button type="button" hx-post="/settings/check-assurance" hx-include="#settings-form" hx-target="#cli-check-result" hx-swap="innerHTML">
+      <button data-cli-check-button type="button" hx-post="/settings/check-assurance" hx-include="#settings-form" hx-target="#cli-check-result" hx-swap="innerHTML" hx-indicator="#cli-check-spinner">
         Check assurance CLI
       </button>
-      <button type="button" hx-post="/settings/check-azure" hx-include="#settings-form" hx-target="#cli-check-result" hx-swap="innerHTML">
+      <button data-cli-check-button type="button" hx-post="/settings/check-azure" hx-include="#settings-form" hx-target="#cli-check-result" hx-swap="innerHTML" hx-indicator="#cli-check-spinner">
         Check Azure
       </button>
-      <button type="button" hx-post="/settings/check-dataverse" hx-include="#settings-form" hx-target="#cli-check-result" hx-swap="innerHTML">
+      <button data-cli-check-button type="button" hx-post="/settings/check-dataverse" hx-include="#settings-form" hx-target="#cli-check-result" hx-swap="innerHTML" hx-indicator="#cli-check-spinner">
         Check Dataverse
       </button>
+      <span id="cli-check-spinner" class="spinner htmx-indicator" aria-label="Check running"></span>
     </div>
   </form>
 
@@ -66,4 +67,23 @@
     Settings are stored in a local ignored file. Do not store credentials in this UI.
   </div>
 </section>
+<script>
+  document.body.addEventListener("htmx:beforeRequest", function (event) {
+    if (!event.detail.elt.matches("[data-cli-check-button]")) {
+      return;
+    }
+    document.querySelectorAll("[data-cli-check-button]").forEach(function (button) {
+      button.disabled = true;
+    });
+  });
+
+  document.body.addEventListener("htmx:afterRequest", function (event) {
+    if (!event.detail.elt.matches("[data-cli-check-button]")) {
+      return;
+    }
+    document.querySelectorAll("[data-cli-check-button]").forEach(function (button) {
+      button.disabled = false;
+    });
+  });
+</script>
 {% endblock %}
