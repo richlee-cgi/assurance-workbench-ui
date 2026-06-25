@@ -13,7 +13,7 @@ from typing import Any
 from app.settings import AppSettings
 
 
-PRESETS = ("architecture", "dataverse", "scaling")
+PRESETS = ("architecture", "delivery", "operations", "dataverse", "performance", "risk")
 SOURCES = ("confluence", "jira", "azure", "dataverse", "code")
 
 

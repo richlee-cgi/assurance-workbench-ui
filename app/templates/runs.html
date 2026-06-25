@@ -19,8 +19,11 @@
       <select name="preset">
         <option value="">Any</option>
         <option value="architecture" {{ 'selected' if filters.preset == 'architecture' else '' }}>Architecture</option>
+        <option value="delivery" {{ 'selected' if filters.preset == 'delivery' else '' }}>Delivery</option>
+        <option value="operations" {{ 'selected' if filters.preset == 'operations' else '' }}>Operations</option>
         <option value="dataverse" {{ 'selected' if filters.preset == 'dataverse' else '' }}>Dataverse</option>
-        <option value="scaling" {{ 'selected' if filters.preset == 'scaling' else '' }}>Scaling</option>
+        <option value="performance" {{ 'selected' if filters.preset == 'performance' else '' }}>Performance</option>
+        <option value="risk" {{ 'selected' if filters.preset == 'risk' else '' }}>Risk</option>
       </select>
     </label>
     <label>

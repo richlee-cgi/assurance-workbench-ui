@@ -203,8 +203,8 @@ def test_filter_evidence_runs() -> None:
         EvidenceRunSummary(
             "run-2",
             Path("/tmp/run-2"),
-            "scaling",
-            "scaling",
+            "performance",
+            "performance",
             ("azure",),
             0,
             "",

@@ -300,14 +300,14 @@ def test_runs_page_filters(monkeypatch, tmp_path) -> None:
             has_evidence=True,
         ),
         EvidenceRunSummary(
-            id="run-scaling",
-            run_dir=tmp_path / "runs" / "run-scaling",
-            topic="scaling",
-            preset="scaling",
+            id="run-performance",
+            run_dir=tmp_path / "runs" / "run-performance",
+            topic="performance",
+            preset="performance",
             sources=("azure",),
             exit_code=0,
             command="",
-            evidence_path=tmp_path / "runs" / "run-scaling" / "evidence-pack.md",
+            evidence_path=tmp_path / "runs" / "run-performance" / "evidence-pack.md",
             has_evidence=True,
         ),
     ]
@@ -318,7 +318,7 @@ def test_runs_page_filters(monkeypatch, tmp_path) -> None:
     assert response.status_code == 200
     assert "booking" in response.text
     assert "/runs/run-booking" in response.text
-    assert "/runs/run-scaling" not in response.text
+    assert "/runs/run-performance" not in response.text
 
 
 def test_run_detail_page(monkeypatch, tmp_path) -> None:
