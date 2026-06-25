@@ -16,6 +16,7 @@ def test_home_page() -> None:
     assert response.status_code == 200
     assert "Assurance Workbench" in response.text
     assert "/static/icons/favicon.svg" in response.text
+    assert "/static/icons/app-icon.svg" in response.text
     assert "/static/manifest.webmanifest" in response.text
     assert "Evidence pack runner" in response.text
     assert "hx-post=\"/preview-command\"" in response.text

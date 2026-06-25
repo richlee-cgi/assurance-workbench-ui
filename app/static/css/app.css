@@ -31,6 +31,18 @@ body {
   background: var(--panel);
 }
 
+.site-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.site-brand img {
+  width: 32px;
+  height: 32px;
+  flex: 0 0 auto;
+}
+
 .site-header h1,
 .section-header h2 {
   margin: 0;
