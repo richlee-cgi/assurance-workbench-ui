@@ -24,6 +24,8 @@ RUN_FILES = {
     "evidence-pack.md",
     "gaps-and-warnings.md",
     "gaps-and-warnings.json",
+    "assurance-checks.md",
+    "analyst-brief.md",
 }
 
 
@@ -92,6 +94,14 @@ class GapWarningItem:
     text: str
     criteria: tuple[str, ...]
     locations: tuple[str, ...]
+
+
+@dataclass(frozen=True)
+class AssuranceCheck:
+    status: str
+    title: str
+    detail: str
+    follow_up: str = ""
 
 
 @dataclass(frozen=True)
@@ -323,7 +333,9 @@ def run_file_path(settings: AppSettings, run_id: str, filename: str) -> Path | N
 def write_gaps_and_warnings(run_dir: Path, *, evidence_markdown: str | None = None, stderr: str | None = None) -> tuple[str, ...]:
     evidence_markdown = _read_text(run_dir / "evidence-pack.md") if evidence_markdown is None else evidence_markdown
     stderr = _read_text(run_dir / "stderr.log") if stderr is None else stderr
+    request = _read_json(run_dir / "request.json")
     structured_items = _extract_warning_items(evidence_markdown, stderr)
+    checks = _assurance_checks(evidence_markdown, stderr, request, structured_items)
     payload = {
         "items": [
             {
@@ -337,6 +349,8 @@ def write_gaps_and_warnings(run_dir: Path, *, evidence_markdown: str | None = No
     }
     (run_dir / "gaps-and-warnings.json").write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     (run_dir / "gaps-and-warnings.md").write_text(_gaps_and_warnings_markdown(structured_items), encoding="utf-8")
+    (run_dir / "assurance-checks.md").write_text(_assurance_checks_markdown(checks), encoding="utf-8")
+    (run_dir / "analyst-brief.md").write_text(_analyst_brief_markdown(evidence_markdown, request, structured_items, checks), encoding="utf-8")
     return tuple(item.text for item in structured_items)
 
 
@@ -506,6 +520,120 @@ def _extract_warnings(markdown: str, stderr: str) -> tuple[str, ...]:
     return tuple(item.text for item in _extract_warning_items(markdown, stderr))
 
 
+def _assurance_checks(
+    markdown: str,
+    stderr: str,
+    request: dict[str, Any],
+    warning_items: tuple[GapWarningItem, ...],
+) -> tuple[AssuranceCheck, ...]:
+    selected_sources = tuple(str(source) for source in request.get("sources", ()) if str(source))
+    lowered = markdown.lower()
+    checks: list[AssuranceCheck] = []
+    checks.append(_evidence_presence_check(markdown))
+    checks.extend(_source_coverage_checks(markdown, selected_sources))
+    checks.append(_mechanical_signal_check(warning_items))
+    if stderr.strip():
+        checks.append(
+            AssuranceCheck(
+                "review",
+                "Tool stderr was captured",
+                "The run produced stderr output.",
+                "Check stderr.log to distinguish expected CLI warnings from retrieval failures.",
+            )
+        )
+    checks.extend(_document_absence_checks(lowered))
+    return tuple(checks)
+
+
+def _evidence_presence_check(markdown: str) -> AssuranceCheck:
+    if markdown.strip():
+        return AssuranceCheck("pass", "Evidence pack exists", "evidence-pack.md contains retrieved evidence.")
+    return AssuranceCheck(
+        "warn",
+        "Evidence pack is empty",
+        "No evidence text was available for mechanical checks.",
+        "Check command.txt, stdout.log and stderr.log before relying on this run.",
+    )
+
+
+def _source_coverage_checks(markdown: str, selected_sources: tuple[str, ...]) -> tuple[AssuranceCheck, ...]:
+    if not selected_sources:
+        return (
+            AssuranceCheck(
+                "review",
+                "No sources selected",
+                "The saved request did not select any evidence sources.",
+                "Confirm whether this was intentional or re-run with Confluence, Jira, code, Azure or Dataverse enabled.",
+            ),
+        )
+    checks = []
+    for source in selected_sources:
+        status = _source_status(markdown, source)
+        if status in {"yes", ""}:
+            checks.append(AssuranceCheck("pass", f"{source.title()} evidence selected", f"Source status: `{status or 'not recorded'}`."))
+        else:
+            checks.append(
+                AssuranceCheck(
+                    "review",
+                    f"{source.title()} evidence incomplete",
+                    f"Source status: `{status}`.",
+                    f"Check whether missing {source} evidence affects the assurance conclusion.",
+                )
+            )
+    return tuple(checks)
+
+
+def _source_status(markdown: str, source: str) -> str:
+    prefix = f"- {source.title()}: `"
+    for line in markdown.splitlines():
+        if line.startswith(prefix):
+            return line.removeprefix(prefix).split("`", 1)[0]
+    return ""
+
+
+def _mechanical_signal_check(warning_items: tuple[GapWarningItem, ...]) -> AssuranceCheck:
+    if warning_items:
+        return AssuranceCheck(
+            "review",
+            "Explicit gap or warning language found",
+            f"{len(warning_items)} mechanical signal(s) were found in retrieved evidence.",
+            "Review gaps-and-warnings.md before doing deeper analysis.",
+        )
+    return AssuranceCheck("pass", "No explicit gap or warning language found", "No configured mechanical signal terms were found.")
+
+
+def _document_absence_checks(lowered_markdown: str) -> tuple[AssuranceCheck, ...]:
+    checks = []
+    lld_present = _contains_any(lowered_markdown, ("lld", "low level design", "low-level design"))
+    if lld_present:
+        checks.append(_absence_check(lowered_markdown, ("nfr", "non-functional", "non functional"), "LLD NFR coverage", "No obvious NFR/non-functional requirement language was found near this evidence set.", "Confirm whether the LLD covers performance, resilience, audit, security, monitoring and support needs."))
+        checks.append(_absence_check(lowered_markdown, ("error handling", "error code", "http 4", "http 5", "status code"), "LLD error handling coverage", "No obvious error-handling or HTTP status-code language was found.", "Compare documented error behaviour with implementation and API contracts."))
+    else:
+        checks.append(
+            AssuranceCheck(
+                "info",
+                "LLD absence checks not triggered",
+                "No obvious LLD marker was found in the retrieved evidence.",
+                "If this run is meant to assure a design, confirm the relevant LLD was retrieved.",
+            )
+        )
+    if _contains_any(lowered_markdown, ("xml", "soap")):
+        checks.append(_absence_check(lowered_markdown, ("schema", "xsd", ".xsd"), "XML schema coverage", "XML/SOAP language was found but no obvious schema/XSD language was found.", "Confirm whether XML payloads have a documented and tested schema."))
+    if _contains_any(lowered_markdown, ("api", "endpoint", "http")):
+        checks.append(_absence_check(lowered_markdown, ("400", "401", "403", "404", "409", "422", "429", "500", "5xx", "4xx"), "API error-code coverage", "API/HTTP language was found but common error-code terms were not obvious.", "Compare documented status codes against code, tests and client behaviour."))
+    return tuple(checks)
+
+
+def _absence_check(markdown: str, terms: tuple[str, ...], title: str, missing_detail: str, follow_up: str) -> AssuranceCheck:
+    if _contains_any(markdown, terms):
+        return AssuranceCheck("pass", title, "Expected language was found.")
+    return AssuranceCheck("review", title, missing_detail, follow_up)
+
+
+def _contains_any(text: str, terms: tuple[str, ...]) -> bool:
+    return any(term in text for term in terms)
+
+
 def _extract_warning_items(markdown: str, stderr: str) -> tuple[GapWarningItem, ...]:
     items: dict[tuple[str, tuple[str, ...]], GapWarningItem] = {}
     current_section = ""
@@ -601,6 +729,102 @@ def _gaps_and_warnings_markdown(items: tuple[GapWarningItem, ...]) -> str:
             lines.append("")
     lines.append("")
     return "\n".join(lines)
+
+
+def _assurance_checks_markdown(checks: tuple[AssuranceCheck, ...]) -> str:
+    lines = ["# Assurance Checks", ""]
+    if not checks:
+        lines.append("_No deterministic checks were run._")
+    else:
+        for check in checks:
+            lines.append(f"## {_status_label(check.status)} {check.title}")
+            lines.append("")
+            lines.append(_escape_markdown_inline(check.detail))
+            if check.follow_up:
+                lines.append("")
+                lines.append(f"- **Follow-up:** {_escape_markdown_inline(check.follow_up)}")
+            lines.append("")
+    lines.append("")
+    return "\n".join(lines)
+
+
+def _analyst_brief_markdown(
+    markdown: str,
+    request: dict[str, Any],
+    warning_items: tuple[GapWarningItem, ...],
+    checks: tuple[AssuranceCheck, ...],
+) -> str:
+    topic = str(request.get("topic") or "unspecified")
+    preset = str(request.get("preset") or "none")
+    sources = tuple(str(source) for source in request.get("sources", ()) if str(source))
+    review_checks = tuple(check for check in checks if check.status in {"warn", "review"})
+    lines = [
+        "# Analyst Brief",
+        "",
+        "This brief is generated mechanically from the retrieved evidence. It is intended to prepare human or agent review, not replace it.",
+        "",
+        "## Run Context",
+        "",
+        f"- **Topic:** {_escape_markdown_inline(topic)}",
+        f"- **Preset:** {_escape_markdown_inline(preset)}",
+        f"- **Sources selected:** {_escape_markdown_inline(', '.join(sources) if sources else 'none')}",
+        f"- **Evidence length:** {len(markdown):,} characters",
+        f"- **Mechanical signals:** {len(warning_items)}",
+        f"- **Checks needing review:** {len(review_checks)}",
+        "",
+        "## Highest-Value Starting Points",
+        "",
+    ]
+    if warning_items:
+        for item in warning_items[:5]:
+            location = item.locations[0] if item.locations else "unknown source"
+            lines.append(f"- **{item.kind.title()}:** {_truncate(_plain_text(item.text), 220)}")
+            lines.append(f"  Source: {_escape_markdown_inline(location)}")
+    else:
+        lines.append("- No explicit gap/warning language was detected. Review may need to focus on absence and consistency checks.")
+    lines.extend(["", "## Deterministic Follow-Ups", ""])
+    if review_checks:
+        for check in review_checks:
+            follow_up = check.follow_up or check.detail
+            lines.append(f"- **{check.title}:** {_escape_markdown_inline(follow_up)}")
+    else:
+        lines.append("- No deterministic checks currently require review.")
+    lines.extend(
+        [
+            "",
+            "## Analyst Questions",
+            "",
+            "- Are the expected source documents present for this topic, especially LLDs, API contracts, implementation code and test evidence?",
+            "- Are required schemas, payload contracts or interface definitions present where integrations are discussed?",
+            "- Do documented HTTP/API error behaviours match code, tests and downstream expectations?",
+            "- Are NFRs covered explicitly, including performance, resilience, audit, monitoring, support and security?",
+            "- Are there contradictions between Confluence decisions, Jira stories and repository implementation evidence?",
+            "",
+            "## Related Files",
+            "",
+            "- evidence-pack.md",
+            "- assurance-checks.md",
+            "- gaps-and-warnings.md",
+            "- gaps-and-warnings.json",
+            "",
+        ]
+    )
+    return "\n".join(lines)
+
+
+def _status_label(status: str) -> str:
+    labels = {"pass": "PASS", "info": "INFO", "review": "REVIEW", "warn": "WARN"}
+    return labels.get(status, status.upper())
+
+
+def _plain_text(value: str) -> str:
+    return " ".join(value.replace("|", " ").split())
+
+
+def _truncate(value: str, limit: int) -> str:
+    if len(value) <= limit:
+        return _escape_markdown_inline(value)
+    return _escape_markdown_inline(value[: limit - 3].rstrip() + "...")
 
 
 def _format_metadata_lines(label: str, values: tuple[str, ...]) -> list[str]:

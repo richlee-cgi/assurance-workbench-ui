@@ -404,6 +404,8 @@ def test_run_detail_page(monkeypatch, tmp_path) -> None:
     assert f"/runs/{run_dir.name}/files/evidence-pack.md" in response.text
     assert f"/runs/{run_dir.name}/files/gaps-and-warnings.md" in response.text
     assert f"/runs/{run_dir.name}/files/gaps-and-warnings.json" in response.text
+    assert f"/runs/{run_dir.name}/files/assurance-checks.md" in response.text
+    assert f"/runs/{run_dir.name}/files/analyst-brief.md" in response.text
     assert "assurance report evidence-pack booking --include-azure" in response.text
     assert "<h1>Evidence</h1>" in response.text
     assert "gap: missing Jira context" in response.text

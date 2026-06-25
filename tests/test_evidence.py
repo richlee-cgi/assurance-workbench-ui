@@ -185,6 +185,8 @@ def test_run_evidence_pack_writes_metadata_and_logs(tmp_path) -> None:
     assert "warning: partial data" in (result.run_dir / "gaps-and-warnings.json").read_text(encoding="utf-8")
     assert '"criteria":' in (result.run_dir / "gaps-and-warnings.json").read_text(encoding="utf-8")
     assert '"locations":' in (result.run_dir / "gaps-and-warnings.json").read_text(encoding="utf-8")
+    assert "Explicit gap or warning language found" in (result.run_dir / "assurance-checks.md").read_text(encoding="utf-8")
+    assert "Analyst Questions" in (result.run_dir / "analyst-brief.md").read_text(encoding="utf-8")
 
 
 def test_run_evidence_pack_records_timeout(tmp_path) -> None:
@@ -295,6 +297,51 @@ def test_run_file_path_allows_gaps_and_warnings_artifacts(tmp_path) -> None:
     path = run_file_path(AppSettings(workbench_root=str(tmp_path)), run_dir.name, "gaps-and-warnings.json")
 
     assert path == artifact
+
+
+def test_run_file_path_allows_analysis_artifacts(tmp_path) -> None:
+    run_dir = tmp_path / "runs" / "2026-06-25-090000-booking"
+    run_dir.mkdir(parents=True)
+    checks = run_dir / "assurance-checks.md"
+    brief = run_dir / "analyst-brief.md"
+    checks.write_text("# Assurance Checks\n", encoding="utf-8")
+    brief.write_text("# Analyst Brief\n", encoding="utf-8")
+
+    settings = AppSettings(workbench_root=str(tmp_path))
+
+    assert run_file_path(settings, run_dir.name, "assurance-checks.md") == checks
+    assert run_file_path(settings, run_dir.name, "analyst-brief.md") == brief
+
+
+def test_analysis_artifacts_include_absence_checks(tmp_path) -> None:
+    def fake_runner(command, **kwargs):
+        out_path = command[command.index("--out") + 1]
+        with open(out_path, "w", encoding="utf-8") as handle:
+            handle.write(
+                "# Evidence\n\n"
+                "## Sources Queried\n\n"
+                "- Confluence: `yes`\n"
+                "- Jira: `yes`\n\n"
+                "## Confluence Evidence\n\n"
+                "## Payment LLD\n\n"
+                "- URL: https://example.atlassian.net/wiki/spaces/DSP/pages/456/Payment+LLD\n\n"
+                "This LLD describes the payment API endpoint and XML payload.\n"
+            )
+        return subprocess.CompletedProcess(command, 0, stdout="", stderr="")
+
+    result = run_evidence_pack(
+        EvidenceForm(topic="payment", sources=("confluence", "jira")),
+        AppSettings(assurance_path="/tmp/assurance", workbench_root=str(tmp_path)),
+        runner=fake_runner,
+    )
+
+    checks = (result.run_dir / "assurance-checks.md").read_text(encoding="utf-8")
+    brief = (result.run_dir / "analyst-brief.md").read_text(encoding="utf-8")
+
+    assert "LLD NFR coverage" in checks
+    assert "XML schema coverage" in checks
+    assert "API error-code coverage" in checks
+    assert "Confirm whether XML payloads have a documented and tested schema" in brief
 
 
 def test_gaps_and_warnings_markdown_formats_table_rows(tmp_path) -> None:
