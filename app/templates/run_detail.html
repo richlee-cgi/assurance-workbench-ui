@@ -5,7 +5,6 @@
 <section class="panel">
   <div class="section-header">
     <div>
-      <p class="eyebrow">Evidence run</p>
       <h2>{{ detail.summary.topic or detail.summary.preset or detail.summary.id }}</h2>
     </div>
     <span class="status-pill {{ 'success-pill' if detail.summary.exit_code == 0 else 'error-pill' if detail.summary.exit_code else '' }}">
@@ -114,7 +113,6 @@
 <section class="panel">
   <div class="section-header">
     <div>
-      <p class="eyebrow">Missing run</p>
       <h2>Result not found</h2>
     </div>
   </div>
