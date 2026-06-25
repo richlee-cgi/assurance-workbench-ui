@@ -316,9 +316,9 @@ def test_gaps_and_warnings_markdown_formats_table_rows(tmp_path) -> None:
 
     markdown = (result.run_dir / "gaps-and-warnings.md").read_text(encoding="utf-8")
     assert "## 1. Gap" in markdown
-    assert "Extracted table row" in markdown
-    assert "- **Column 1:** ❌ Gap" in markdown
-    assert "- **Column 2:** Not defined" in markdown
+    assert "|   |   |" in markdown
+    assert "| --- | --- |" in markdown
+    assert "| ❌ Gap | Not defined |" in markdown
     assert "```text" not in markdown
     assert "identify gaps" not in markdown
     assert "Gaps / Follow-up Questions" not in markdown

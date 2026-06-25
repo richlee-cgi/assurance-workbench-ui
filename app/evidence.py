@@ -530,10 +530,10 @@ def _gaps_and_warnings_markdown(items: tuple[str, ...]) -> str:
 def _format_gap_or_warning_item(item: str) -> list[str]:
     table_cells = _markdown_table_cells(item)
     if table_cells:
-        lines = ["Extracted table row:", ""]
-        for index, cell in enumerate(table_cells, 1):
-            lines.append(f"- **Column {index}:** {_escape_markdown_inline(cell)}")
-        return lines
+        header = " | ".join(" " for _ in table_cells)
+        separator = " | ".join("---" for _ in table_cells)
+        row = " | ".join(_escape_markdown_table_cell(cell) for cell in table_cells)
+        return [f"| {header} |", f"| {separator} |", f"| {row} |"]
     return [_escape_markdown_inline(item)]
 
 
@@ -547,6 +547,10 @@ def _markdown_table_cells(item: str) -> list[str]:
 
 def _escape_markdown_inline(value: str) -> str:
     return value.replace("|", r"\|")
+
+
+def _escape_markdown_table_cell(value: str) -> str:
+    return value.replace("|", r"\|").replace("\n", " ")
 
 
 def _run_file_action(command: list[str], success_message: str, *, runner=subprocess.run) -> FileActionResult:
