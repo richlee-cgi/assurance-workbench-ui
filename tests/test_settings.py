@@ -13,6 +13,9 @@ def test_save_and_load_settings(tmp_path: Path) -> None:
         azure_resource_group="rg",
         repo_roots="/tmp/dev",
         repos="service-a",
+        exclude_confluence_parents="983238177",
+        jira_team_field="customfield_12345",
+        exclude_jira_teams="DSP Assurance",
     )
 
     save_settings(settings, path)
@@ -30,6 +33,9 @@ def test_settings_from_form_strips_values() -> None:
             "azure_resource_group": " rg ",
             "repo_roots": " /tmp/dev ",
             "repos": " service-a ",
+            "exclude_confluence_parents": " 983238177 ",
+            "jira_team_field": " customfield_12345 ",
+            "exclude_jira_teams": " DSP Assurance ",
         }
     )
 
@@ -40,3 +46,6 @@ def test_settings_from_form_strips_values() -> None:
     assert settings.azure_resource_group == "rg"
     assert settings.repo_roots == "/tmp/dev"
     assert settings.repos == "service-a"
+    assert settings.exclude_confluence_parents == "983238177"
+    assert settings.jira_team_field == "customfield_12345"
+    assert settings.exclude_jira_teams == "DSP Assurance"

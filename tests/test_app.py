@@ -36,6 +36,8 @@ def test_settings_page(monkeypatch, tmp_path) -> None:
     assert "Assurance executable" in response.text
     assert "Workbench evidence root" in response.text
     assert "Default repo roots" in response.text
+    assert "Exclude Confluence from parent" in response.text
+    assert "Exclude Jira from Team" in response.text
     assert "hx-post=\"/settings\"" in response.text
     assert "id=\"cli-check-spinner\"" in response.text
     assert "data-cli-check-button" in response.text
@@ -96,6 +98,9 @@ def test_save_settings_route(monkeypatch, tmp_path) -> None:
             "azure_resource_group": "rg",
             "repo_roots": "/tmp/dev",
             "repos": "booking-service",
+            "exclude_confluence_parents": "983238177",
+            "jira_team_field": "customfield_12345",
+            "exclude_jira_teams": "DSP Assurance",
         },
     )
 
@@ -144,6 +149,9 @@ def test_preview_command_route() -> None:
             "sources": ["confluence", "azure"],
             "confluence_space": "SPACE",
             "azure_resource_group": "rg",
+            "exclude_confluence_parents": "983238177",
+            "jira_team_field": "customfield_12345",
+            "exclude_jira_teams": "DSP Assurance",
             "limit": "15",
             "refresh": "on",
         },
@@ -156,6 +164,10 @@ def test_preview_command_route() -> None:
     assert "--skip-jira" in response.text
     assert "--include-azure" in response.text
     assert "--azure-resource-group rg" in response.text
+    assert "--exclude-confluence-parent 983238177" in response.text
+    assert "--jira-team-field customfield_12345" in response.text
+    assert "--exclude-jira-team" in response.text
+    assert "DSP Assurance" in response.text
     assert "--refresh" in response.text
     assert "&lt;timestamp&gt;-booking-allocation" in response.text
 

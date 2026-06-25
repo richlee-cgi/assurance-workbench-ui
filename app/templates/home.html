@@ -11,6 +11,9 @@
 
   <form id="evidence-form" class="grid-form" hx-post="/preview-command" hx-target="#command-preview" hx-swap="innerHTML" hx-trigger="change, keyup delay:300ms from:input">
     <input type="hidden" name="sources_present" value="1">
+    <input type="hidden" name="exclude_confluence_parents" value="{{ settings.exclude_confluence_parents }}">
+    <input type="hidden" name="jira_team_field" value="{{ settings.jira_team_field }}">
+    <input type="hidden" name="exclude_jira_teams" value="{{ settings.exclude_jira_teams }}">
 
     <label>
       Topic

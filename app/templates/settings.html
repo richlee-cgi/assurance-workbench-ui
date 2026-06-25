@@ -45,6 +45,21 @@
       <textarea name="repos" placeholder="service-a&#10;service-b">{{ settings.repos }}</textarea>
     </label>
 
+    <label>
+      Exclude Confluence from parent
+      <textarea name="exclude_confluence_parents" placeholder="983238177&#10;https://example.atlassian.net/wiki/spaces/SPACE/pages/983238177/Assurance">{{ settings.exclude_confluence_parents }}</textarea>
+    </label>
+
+    <label>
+      Jira team field
+      <input type="text" name="jira_team_field" value="{{ settings.jira_team_field }}" placeholder="Team or customfield_12345">
+    </label>
+
+    <label>
+      Exclude Jira from Team
+      <textarea name="exclude_jira_teams" placeholder="DSP Assurance">{{ settings.exclude_jira_teams }}</textarea>
+    </label>
+
     <div class="form-actions">
       <button type="submit">Save settings</button>
       <button data-cli-check-button type="button" hx-post="/settings/check-assurance" hx-include="#settings-form" hx-target="#cli-check-result" hx-swap="innerHTML" hx-indicator="#cli-check-spinner">

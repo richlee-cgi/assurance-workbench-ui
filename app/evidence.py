@@ -37,6 +37,9 @@ class EvidenceForm:
     azure_resource_group: str = ""
     repo_roots: tuple[str, ...] = ()
     repos: tuple[str, ...] = ()
+    exclude_confluence_parents: tuple[str, ...] = ()
+    jira_team_field: str = "Team"
+    exclude_jira_teams: tuple[str, ...] = ()
     limit: int = 10
     include_prs: bool = False
     include_diffs: bool = False
@@ -111,6 +114,9 @@ def evidence_form_from_data(data: Any, defaults: AppSettings | None = None) -> E
         azure_resource_group=str(data.get("azure_resource_group") or defaults.azure_resource_group).strip(),
         repo_roots=_split_lines_or_commas(str(data.get("repo_roots") or defaults.repo_roots)),
         repos=_split_lines_or_commas(str(data.get("repos") or defaults.repos)),
+        exclude_confluence_parents=_split_lines_or_commas(str(data.get("exclude_confluence_parents") or defaults.exclude_confluence_parents)),
+        jira_team_field=str(data.get("jira_team_field") or defaults.jira_team_field or "Team").strip(),
+        exclude_jira_teams=_split_lines_or_commas(str(data.get("exclude_jira_teams") or defaults.exclude_jira_teams)),
         limit=_positive_int(data.get("limit"), default=10),
         include_prs=_as_bool(data.get("include_prs")),
         include_diffs=_as_bool(data.get("include_diffs")),
@@ -142,6 +148,12 @@ def build_evidence_command(form: EvidenceForm) -> list[str]:
             command.extend(["--azure-resource-group", form.azure_resource_group])
     if "dataverse" in form.sources:
         command.append("--include-dataverse")
+    for parent in form.exclude_confluence_parents:
+        command.extend(["--exclude-confluence-parent", parent])
+    if form.exclude_jira_teams or (form.jira_team_field and form.jira_team_field != "Team"):
+        command.extend(["--jira-team-field", form.jira_team_field])
+    for team in form.exclude_jira_teams:
+        command.extend(["--exclude-jira-team", team])
     if "code" in form.sources:
         command.append("--include-code")
         for root in form.repo_roots:

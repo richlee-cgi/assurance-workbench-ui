@@ -20,6 +20,9 @@ class AppSettings:
     azure_resource_group: str = ""
     repo_roots: str = ""
     repos: str = ""
+    exclude_confluence_parents: str = ""
+    jira_team_field: str = "Team"
+    exclude_jira_teams: str = ""
 
 
 def settings_path() -> Path:
@@ -50,6 +53,9 @@ def settings_from_form(data: Any) -> AppSettings:
         azure_resource_group=str(data.get("azure_resource_group", "")).strip(),
         repo_roots=str(data.get("repo_roots", "")).strip(),
         repos=str(data.get("repos", "")).strip(),
+        exclude_confluence_parents=str(data.get("exclude_confluence_parents", "")).strip(),
+        jira_team_field=str(data.get("jira_team_field", "Team") or "Team").strip(),
+        exclude_jira_teams=str(data.get("exclude_jira_teams", "")).strip(),
     )
 
 

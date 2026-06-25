@@ -63,10 +63,15 @@ Stored values:
 - `azure_resource_group`
 - `repo_roots`
 - `repos`
+- `exclude_confluence_parents`
+- `jira_team_field`
+- `exclude_jira_teams`
 
 The UI does not store API tokens or credentials.
 
 ## Evidence Form Options
+
+Configured exclusions are applied to evidence runs automatically. `Exclude Confluence from parent` accepts page IDs or Confluence page URLs. `Exclude Jira from Team` uses exact team names and the configured `Jira team field`, which can be `Team` or a Jira custom field ID such as `customfield_12345`.
 
 `Code repositories` enables local Git repository evidence. The UI passes selected repo roots and repo names to `assurance report evidence-pack --include-code`, so the CLI can search local files, recent commits and repository metadata.
 
