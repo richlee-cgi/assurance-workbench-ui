@@ -2,10 +2,26 @@
   <div class="inline-result">
     <strong>Command preview</strong>
     <pre class="command-preview">{{ shell_command }}</pre>
+    {% if output_preview is defined %}
+      <dl class="result-list">
+        <div>
+          <dt>Output folder</dt>
+          <dd>{{ output_preview }}</dd>
+        </div>
+      </dl>
+    {% endif %}
   </div>
 {% else %}
   <div class="inline-result">
     <strong>Command preview</strong>
     <pre class="command-preview">assurance report evidence-pack --limit 10</pre>
+    {% if output_preview is defined %}
+      <dl class="result-list">
+        <div>
+          <dt>Output folder</dt>
+          <dd>{{ output_preview }}</dd>
+        </div>
+      </dl>
+    {% endif %}
   </div>
 {% endif %}

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import shutil
 import shlex
 import subprocess
 from dataclasses import asdict, dataclass
@@ -63,6 +64,13 @@ class EvidenceRunDetail:
     evidence_markdown: str
     evidence_html: str
     warnings: tuple[str, ...]
+
+
+@dataclass(frozen=True)
+class FileActionResult:
+    ok: bool
+    message: str
+    command: list[str]
 
 
 def evidence_form_from_data(data: Any, defaults: AppSettings | None = None) -> EvidenceForm:
@@ -129,6 +137,12 @@ def build_run_command(form: EvidenceForm, *, assurance_path: str, evidence_path:
     return command
 
 
+def output_folder_preview(workbench_root: str, form: EvidenceForm) -> Path:
+    root = Path(workbench_root).expanduser() if workbench_root else Path("runs")
+    slug = _slug(form.topic or form.preset or "evidence-pack")
+    return root / "runs" / f"<timestamp>-{slug}"
+
+
 def create_run_dir(workbench_root: str, form: EvidenceForm, *, now: datetime | None = None) -> Path:
     root = Path(workbench_root).expanduser() if workbench_root else Path("runs")
     timestamp = (now or datetime.now().astimezone()).strftime("%Y-%m-%d-%H%M%S")
@@ -190,6 +204,26 @@ def list_evidence_runs(settings: AppSettings) -> list[EvidenceRunSummary]:
     return sorted(summaries, key=lambda item: item.id, reverse=True)
 
 
+def filter_evidence_runs(
+    runs: list[EvidenceRunSummary],
+    *,
+    topic: str = "",
+    preset: str = "",
+    source: str = "",
+) -> list[EvidenceRunSummary]:
+    topic = topic.strip().lower()
+    preset = preset.strip()
+    source = source.strip()
+    filtered = runs
+    if topic:
+        filtered = [run for run in filtered if topic in (run.topic or run.id).lower()]
+    if preset:
+        filtered = [run for run in filtered if run.preset == preset]
+    if source:
+        filtered = [run for run in filtered if source in run.sources]
+    return filtered
+
+
 def load_evidence_run(settings: AppSettings, run_id: str) -> EvidenceRunDetail | None:
     if "/" in run_id or "\\" in run_id or run_id in {"", ".", ".."}:
         return None
@@ -210,6 +244,40 @@ def load_evidence_run(settings: AppSettings, run_id: str) -> EvidenceRunDetail |
         evidence_html=render_markdown(evidence_markdown),
         warnings=_extract_warnings(evidence_markdown, stderr),
     )
+
+
+def form_from_saved_request(request: dict[str, Any], defaults: AppSettings | None = None) -> EvidenceForm:
+    data = dict(request)
+    data["sources_present"] = "1"
+    return evidence_form_from_data(data, defaults)
+
+
+def run_file_path(settings: AppSettings, run_id: str, filename: str) -> Path | None:
+    if filename not in {"request.json", "command.txt", "stdout.log", "stderr.log", "exit-code.txt", "evidence-pack.md"}:
+        return None
+    if "/" in run_id or "\\" in run_id or run_id in {"", ".", ".."}:
+        return None
+    path = evidence_runs_root(settings) / run_id / filename
+    return path if path.exists() and path.is_file() else None
+
+
+def open_run_folder(settings: AppSettings, run_id: str, *, runner=subprocess.run) -> FileActionResult:
+    detail = load_evidence_run(settings, run_id)
+    if not detail:
+        return FileActionResult(False, "Run not found.", [])
+    command = ["open", str(detail.summary.run_dir)]
+    return _run_file_action(command, "Opened run folder.", runner=runner)
+
+
+def open_run_in_vscode(settings: AppSettings, run_id: str, *, runner=subprocess.run) -> FileActionResult:
+    detail = load_evidence_run(settings, run_id)
+    if not detail:
+        return FileActionResult(False, "Run not found.", [])
+    code_path = shutil.which("code")
+    if not code_path:
+        return FileActionResult(False, "VS Code command-line launcher 'code' was not found.", [])
+    command = [code_path, str(detail.summary.run_dir)]
+    return _run_file_action(command, "Opened run folder in VS Code.", runner=runner)
 
 
 def render_markdown(markdown: str) -> str:
@@ -359,3 +427,14 @@ def _extract_warnings(markdown: str, stderr: str) -> tuple[str, ...]:
             if stripped:
                 warnings.append(stripped)
     return tuple(warnings[:20])
+
+
+def _run_file_action(command: list[str], success_message: str, *, runner=subprocess.run) -> FileActionResult:
+    try:
+        completed = runner(command, capture_output=True, text=True, check=False)
+    except OSError as exc:
+        return FileActionResult(False, str(exc), command)
+    if completed.returncode == 0:
+        return FileActionResult(True, success_message, command)
+    message = (completed.stderr or completed.stdout or "Command failed.").strip()
+    return FileActionResult(False, message, command)

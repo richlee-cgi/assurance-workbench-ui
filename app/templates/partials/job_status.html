@@ -1,0 +1,60 @@
+{% if job %}
+<div
+  class="inline-result {{ 'success' if job.exit_code == 0 else 'error' if job.exit_code else '' }}"
+  {% if job.running %}hx-get="/jobs/{{ job.id }}" hx-trigger="every 1s" hx-swap="outerHTML"{% endif %}
+>
+  <strong>
+    {% if job.running %}
+      Run in progress
+    {% elif job.canceled %}
+      Run canceled
+    {% elif job.exit_code == 0 %}
+      Run completed
+    {% else %}
+      Run failed
+    {% endif %}
+  </strong>
+  <div class="command-line">{{ shell_command }}</div>
+  <dl class="result-list">
+    <div>
+      <dt>Exit code</dt>
+      <dd>{{ job.exit_code if job.exit_code is not none else 'running' }}</dd>
+    </div>
+    <div>
+      <dt>Run folder</dt>
+      <dd>{{ job.run_dir }}</dd>
+    </div>
+    <div>
+      <dt>Evidence file</dt>
+      <dd>{{ job.evidence_path }}</dd>
+    </div>
+  </dl>
+  {% if job.running %}
+    <div class="inline-actions">
+      <button type="button" hx-post="/jobs/{{ job.id }}/cancel" hx-target="closest .inline-result" hx-swap="outerHTML">
+        Cancel
+      </button>
+    </div>
+  {% else %}
+    <div class="inline-actions">
+      <a class="button-link" href="/runs/{{ job.run_dir.name }}">Open result</a>
+      <a class="button-link secondary" href="/runs">All results</a>
+    </div>
+  {% endif %}
+  {% if job.timed_out %}
+    <p>Command timed out.</p>
+  {% endif %}
+  <details open>
+    <summary>stdout.log</summary>
+    <pre>{% if job.stdout %}{{ job.stdout }}{% elif job.running %}No stdout captured yet.{% else %}No stdout captured.{% endif %}</pre>
+  </details>
+  <details>
+    <summary>stderr.log</summary>
+    <pre>{% if job.stderr %}{{ job.stderr }}{% elif job.running %}No stderr captured yet.{% else %}No stderr captured.{% endif %}</pre>
+  </details>
+</div>
+{% else %}
+<div class="inline-result error">
+  <strong>Run not found</strong>
+</div>
+{% endif %}

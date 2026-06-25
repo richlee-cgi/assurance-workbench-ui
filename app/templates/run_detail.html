@@ -54,6 +54,30 @@
     <pre class="command-preview">{{ detail.summary.command or 'No command recorded.' }}</pre>
   </section>
 
+  <section class="result-section">
+    <h3>Saved files</h3>
+    <div class="file-actions">
+      <a class="button-link secondary" href="/runs/{{ detail.summary.id }}/files/evidence-pack.md">evidence-pack.md</a>
+      <a class="button-link secondary" href="/runs/{{ detail.summary.id }}/files/request.json">request.json</a>
+      <a class="button-link secondary" href="/runs/{{ detail.summary.id }}/files/command.txt">command.txt</a>
+      <a class="button-link secondary" href="/runs/{{ detail.summary.id }}/files/stdout.log">stdout.log</a>
+      <a class="button-link secondary" href="/runs/{{ detail.summary.id }}/files/stderr.log">stderr.log</a>
+    </div>
+    <div class="file-actions">
+      <button type="button" hx-post="/runs/{{ detail.summary.id }}/open-folder" hx-target="#file-action-result" hx-swap="innerHTML">
+        Open output folder
+      </button>
+      <button type="button" hx-post="/runs/{{ detail.summary.id }}/open-vscode" hx-target="#file-action-result" hx-swap="innerHTML">
+        Open in VS Code
+      </button>
+      <button type="button" hx-post="/runs/{{ detail.summary.id }}/rerun" hx-target="#rerun-result" hx-swap="innerHTML">
+        Re-run
+      </button>
+    </div>
+    <div id="file-action-result" class="fragment-slot" aria-live="polite"></div>
+    <div id="rerun-result" class="fragment-slot" aria-live="polite"></div>
+  </section>
+
   {% if detail.warnings %}
     <section class="result-section">
       <h3>Gaps and warnings</h3>

@@ -1,13 +1,19 @@
 import subprocess
 from datetime import datetime
+from pathlib import Path
 
 from app.evidence import (
     EvidenceForm,
+    EvidenceRunSummary,
     build_evidence_command,
     create_run_dir,
     evidence_form_from_data,
+    filter_evidence_runs,
+    form_from_saved_request,
     list_evidence_runs,
     load_evidence_run,
+    open_run_folder,
+    output_folder_preview,
     render_markdown,
     run_evidence_pack,
     shell_command,
@@ -78,6 +84,12 @@ def test_create_run_dir_uses_slug_and_timestamp(tmp_path) -> None:
     assert run_dir == tmp_path / "runs" / "2026-06-24-093000-booking-allocation"
 
 
+def test_output_folder_preview_uses_slug(tmp_path) -> None:
+    preview = output_folder_preview(str(tmp_path), EvidenceForm(topic="Booking Allocation!"))
+
+    assert preview == tmp_path / "runs" / "<timestamp>-booking-allocation"
+
+
 def test_run_evidence_pack_writes_metadata_and_logs(tmp_path) -> None:
     def fake_runner(command, **kwargs):
         out_path = command[command.index("--out") + 1]
@@ -135,6 +147,44 @@ def test_list_evidence_runs_reads_saved_metadata(tmp_path) -> None:
     assert runs[0].has_evidence is True
 
 
+def test_filter_evidence_runs() -> None:
+    runs = [
+        EvidenceRunSummary(
+            "run-1",
+            Path("/tmp/run-1"),
+            "booking flow",
+            "architecture",
+            ("jira",),
+            0,
+            "",
+            Path("/tmp/run-1/evidence-pack.md"),
+            True,
+        ),
+        EvidenceRunSummary(
+            "run-2",
+            Path("/tmp/run-2"),
+            "scaling",
+            "scaling",
+            ("azure",),
+            0,
+            "",
+            Path("/tmp/run-2/evidence-pack.md"),
+            True,
+        ),
+    ]
+
+    filtered = filter_evidence_runs(runs, topic="book", preset="architecture", source="jira")
+
+    assert [run.id for run in filtered] == ["run-1"]
+
+
+def test_form_from_saved_request_preserves_empty_sources() -> None:
+    form = form_from_saved_request({"topic": "no sources", "sources": []})
+
+    assert form.topic == "no sources"
+    assert form.sources == ()
+
+
 def test_load_evidence_run_renders_markdown_and_warnings(tmp_path) -> None:
     run_dir = tmp_path / "runs" / "2026-06-25-090000-booking"
     run_dir.mkdir(parents=True)
@@ -158,6 +208,23 @@ def test_load_evidence_run_rejects_path_traversal(tmp_path) -> None:
     detail = load_evidence_run(AppSettings(workbench_root=str(tmp_path)), "../secret")
 
     assert detail is None
+
+
+def test_open_run_folder_uses_local_open_command(tmp_path) -> None:
+    run_dir = tmp_path / "runs" / "2026-06-25-090000-booking"
+    run_dir.mkdir(parents=True)
+    (run_dir / "request.json").write_text('{"topic": "booking"}', encoding="utf-8")
+
+    calls = []
+
+    def fake_runner(command, **kwargs):
+        calls.append(command)
+        return subprocess.CompletedProcess(command, 0, stdout="", stderr="")
+
+    result = open_run_folder(AppSettings(workbench_root=str(tmp_path)), run_dir.name, runner=fake_runner)
+
+    assert result.ok is True
+    assert calls == [["open", str(run_dir)]]
 
 
 def test_render_markdown_escapes_html() -> None:

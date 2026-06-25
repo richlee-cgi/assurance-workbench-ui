@@ -206,6 +206,19 @@ fieldset input {
   grid-column: 1 / -1;
 }
 
+.filter-form {
+  display: grid;
+  grid-template-columns: minmax(180px, 1fr) minmax(160px, 220px) minmax(160px, 220px) auto;
+  align-items: end;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.filter-actions {
+  display: flex;
+  gap: 8px;
+}
+
 .fragment-slot {
   margin-top: 16px;
 }
@@ -215,6 +228,13 @@ fieldset input {
   flex-wrap: wrap;
   gap: 8px;
   margin-top: 14px;
+}
+
+.file-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
 }
 
 .inline-result {
@@ -438,6 +458,24 @@ pre {
   .form-actions {
     align-items: stretch;
     flex-direction: column;
+  }
+
+  .filter-form {
+    grid-template-columns: 1fr;
+  }
+
+  .filter-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .file-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .button-link {
+    width: 100%;
   }
 
   button {

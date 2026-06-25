@@ -7,8 +7,38 @@
       <p class="eyebrow">Phase 5</p>
       <h2>Evidence results</h2>
     </div>
-    <span class="status-pill">{{ runs | length }} runs</span>
+    <span class="status-pill">{{ runs | length }} of {{ total_runs }} runs</span>
   </div>
+
+  <form class="filter-form" method="get" action="/runs">
+    <label>
+      Topic
+      <input type="search" name="topic" value="{{ filters.topic }}" placeholder="booking">
+    </label>
+    <label>
+      Preset
+      <select name="preset">
+        <option value="">Any</option>
+        <option value="architecture" {{ 'selected' if filters.preset == 'architecture' else '' }}>Architecture</option>
+        <option value="dataverse" {{ 'selected' if filters.preset == 'dataverse' else '' }}>Dataverse</option>
+        <option value="scaling" {{ 'selected' if filters.preset == 'scaling' else '' }}>Scaling</option>
+      </select>
+    </label>
+    <label>
+      Source
+      <select name="source">
+        <option value="">Any</option>
+        <option value="confluence" {{ 'selected' if filters.source == 'confluence' else '' }}>Confluence</option>
+        <option value="jira" {{ 'selected' if filters.source == 'jira' else '' }}>Jira</option>
+        <option value="azure" {{ 'selected' if filters.source == 'azure' else '' }}>Azure</option>
+        <option value="dataverse" {{ 'selected' if filters.source == 'dataverse' else '' }}>Dataverse</option>
+      </select>
+    </label>
+    <div class="filter-actions">
+      <button type="submit">Filter</button>
+      <a class="button-link secondary" href="/runs">Clear</a>
+    </div>
+  </form>
 
   {% if runs %}
     <div class="run-list">

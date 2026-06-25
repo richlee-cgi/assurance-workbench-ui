@@ -1,0 +1,7 @@
+<div class="inline-result {{ 'success' if result.ok else 'error' }}">
+  <strong>{{ 'Action completed' if result.ok else 'Action failed' }}</strong>
+  <p>{{ result.message }}</p>
+  {% if result.command %}
+    <div class="command-line">{{ result.command | join(' ') }}</div>
+  {% endif %}
+</div>

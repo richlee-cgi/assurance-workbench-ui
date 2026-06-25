@@ -1,7 +1,8 @@
 from fastapi.testclient import TestClient
 
 from app.cli import CliCheckResult
-from app.evidence import EvidenceRunDetail, EvidenceRunResult, EvidenceRunSummary
+from app.evidence import EvidenceRunDetail, EvidenceRunResult, EvidenceRunSummary, FileActionResult
+from app.jobs import EvidenceJob
 from app.main import app
 from app.settings import SETTINGS_PATH_ENV
 
@@ -16,6 +17,7 @@ def test_home_page() -> None:
     assert "Assurance Workbench" in response.text
     assert "Evidence pack runner" in response.text
     assert "hx-post=\"/preview-command\"" in response.text
+    assert "Output folder" in response.text
 
 
 def test_settings_page() -> None:
@@ -114,6 +116,7 @@ def test_preview_command_route() -> None:
     assert "--include-azure" in response.text
     assert "--azure-resource-group rg" in response.text
     assert "--refresh" in response.text
+    assert "&lt;timestamp&gt;-booking-allocation" in response.text
 
 
 def test_run_evidence_pack_route(monkeypatch, tmp_path) -> None:
@@ -142,6 +145,64 @@ def test_run_evidence_pack_route(monkeypatch, tmp_path) -> None:
     assert f"/runs/{run_dir.name}" in response.text
 
 
+def test_start_evidence_pack_route(monkeypatch, tmp_path) -> None:
+    run_dir = tmp_path / "runs" / "job"
+    evidence_path = run_dir / "evidence-pack.md"
+    job = EvidenceJob(
+        id="job-1",
+        run_dir=run_dir,
+        command=["/tmp/assurance", "report", "evidence-pack", "booking", "--out", str(evidence_path)],
+        evidence_path=evidence_path,
+        stdout="started\n",
+    )
+    monkeypatch.setattr("app.main.start_evidence_pack_job", lambda form, settings: job)
+
+    response = client.post("/start-evidence-pack", data={"topic": "booking", "sources": ["confluence"]})
+
+    assert response.status_code == 200
+    assert "Run in progress" in response.text
+    assert "started" in response.text
+    assert "/jobs/job-1" in response.text
+
+
+def test_job_status_route(monkeypatch, tmp_path) -> None:
+    run_dir = tmp_path / "runs" / "job"
+    evidence_path = run_dir / "evidence-pack.md"
+    job = EvidenceJob(
+        id="job-1",
+        run_dir=run_dir,
+        command=["/tmp/assurance"],
+        evidence_path=evidence_path,
+        stdout="done\n",
+        exit_code=0,
+    )
+    monkeypatch.setattr("app.main.get_job", lambda job_id: job)
+
+    response = client.get("/jobs/job-1")
+
+    assert response.status_code == 200
+    assert "Run completed" in response.text
+    assert f"/runs/{run_dir.name}" in response.text
+
+
+def test_cancel_job_route(monkeypatch, tmp_path) -> None:
+    run_dir = tmp_path / "runs" / "job"
+    job = EvidenceJob(
+        id="job-1",
+        run_dir=run_dir,
+        command=["/tmp/assurance"],
+        evidence_path=run_dir / "evidence-pack.md",
+        exit_code=130,
+        canceled=True,
+    )
+    monkeypatch.setattr("app.main.cancel_job", lambda job_id: job)
+
+    response = client.post("/jobs/job-1/cancel")
+
+    assert response.status_code == 200
+    assert "Run canceled" in response.text
+
+
 def test_runs_page(monkeypatch, tmp_path) -> None:
     run_dir = tmp_path / "runs" / "2026-06-25-090000-booking"
     evidence_path = run_dir / "evidence-pack.md"
@@ -164,6 +225,41 @@ def test_runs_page(monkeypatch, tmp_path) -> None:
     assert "Evidence results" in response.text
     assert "booking" in response.text
     assert f"/runs/{run_dir.name}" in response.text
+
+
+def test_runs_page_filters(monkeypatch, tmp_path) -> None:
+    summaries = [
+        EvidenceRunSummary(
+            id="run-booking",
+            run_dir=tmp_path / "runs" / "run-booking",
+            topic="booking",
+            preset="architecture",
+            sources=("jira",),
+            exit_code=0,
+            command="",
+            evidence_path=tmp_path / "runs" / "run-booking" / "evidence-pack.md",
+            has_evidence=True,
+        ),
+        EvidenceRunSummary(
+            id="run-scaling",
+            run_dir=tmp_path / "runs" / "run-scaling",
+            topic="scaling",
+            preset="scaling",
+            sources=("azure",),
+            exit_code=0,
+            command="",
+            evidence_path=tmp_path / "runs" / "run-scaling" / "evidence-pack.md",
+            has_evidence=True,
+        ),
+    ]
+    monkeypatch.setattr("app.main.list_evidence_runs", lambda settings: summaries)
+
+    response = client.get("/runs?topic=book&preset=architecture&source=jira")
+
+    assert response.status_code == 200
+    assert "booking" in response.text
+    assert "/runs/run-booking" in response.text
+    assert "/runs/run-scaling" not in response.text
 
 
 def test_run_detail_page(monkeypatch, tmp_path) -> None:
@@ -196,6 +292,9 @@ def test_run_detail_page(monkeypatch, tmp_path) -> None:
     assert response.status_code == 200
     assert "Run metadata" in response.text
     assert "Source coverage" in response.text
+    assert "Saved files" in response.text
+    assert "Re-run" in response.text
+    assert f"/runs/{run_dir.name}/files/evidence-pack.md" in response.text
     assert "assurance report evidence-pack booking --include-azure" in response.text
     assert "<h1>Evidence</h1>" in response.text
     assert "gap: missing Jira context" in response.text
@@ -208,3 +307,95 @@ def test_run_detail_page_reports_missing(monkeypatch) -> None:
 
     assert response.status_code == 404
     assert "Result not found" in response.text
+
+
+def test_run_file_route(monkeypatch, tmp_path) -> None:
+    artifact = tmp_path / "evidence-pack.md"
+    artifact.write_text("# Evidence\n", encoding="utf-8")
+    monkeypatch.setattr("app.main.run_file_path", lambda settings, run_id, filename: artifact)
+
+    response = client.get("/runs/run-1/files/evidence-pack.md")
+
+    assert response.status_code == 200
+    assert response.text == "# Evidence\n"
+
+
+def test_run_file_route_reports_missing(monkeypatch) -> None:
+    monkeypatch.setattr("app.main.run_file_path", lambda settings, run_id, filename: None)
+
+    response = client.get("/runs/run-1/files/secret.txt")
+
+    assert response.status_code == 404
+    assert "File not found" in response.text
+
+
+def test_open_folder_route(monkeypatch) -> None:
+    monkeypatch.setattr(
+        "app.main.open_run_folder",
+        lambda settings, run_id: FileActionResult(True, "Opened run folder.", ["open", "/tmp/run"]),
+    )
+
+    response = client.post("/runs/run-1/open-folder")
+
+    assert response.status_code == 200
+    assert "Action completed" in response.text
+    assert "Opened run folder" in response.text
+
+
+def test_open_vscode_route_reports_failure(monkeypatch) -> None:
+    monkeypatch.setattr(
+        "app.main.open_run_in_vscode",
+        lambda settings, run_id: FileActionResult(False, "code was not found", []),
+    )
+
+    response = client.post("/runs/run-1/open-vscode")
+
+    assert response.status_code == 200
+    assert "Action failed" in response.text
+    assert "code was not found" in response.text
+
+
+def test_rerun_route(monkeypatch, tmp_path) -> None:
+    original_dir = tmp_path / "runs" / "original"
+    rerun_dir = tmp_path / "runs" / "rerun"
+    evidence_path = rerun_dir / "evidence-pack.md"
+    summary = EvidenceRunSummary(
+        id=original_dir.name,
+        run_dir=original_dir,
+        topic="booking",
+        preset="",
+        sources=(),
+        exit_code=0,
+        command="",
+        evidence_path=original_dir / "evidence-pack.md",
+        has_evidence=True,
+    )
+    detail = EvidenceRunDetail(
+        summary=summary,
+        request={"topic": "booking", "sources": []},
+        stdout="",
+        stderr="",
+        evidence_markdown="",
+        evidence_html="",
+        warnings=(),
+    )
+    captured = {}
+
+    def fake_start(form, settings):
+        captured["sources"] = form.sources
+        return EvidenceJob(
+            id="job-rerun",
+            run_dir=rerun_dir,
+            command=["/tmp/assurance", "report", "evidence-pack", "booking", "--out", str(evidence_path)],
+            evidence_path=evidence_path,
+            stdout="started",
+        )
+
+    monkeypatch.setattr("app.main.load_evidence_run", lambda settings, run_id: detail)
+    monkeypatch.setattr("app.main.start_evidence_pack_job", fake_start)
+
+    response = client.post("/runs/original/rerun")
+
+    assert response.status_code == 200
+    assert "Run in progress" in response.text
+    assert captured["sources"] == ()

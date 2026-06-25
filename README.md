@@ -37,16 +37,16 @@ Implemented first slice:
 - Assurance CLI health check.
 - Azure and Dataverse CLI health checks through `assurance-cli`.
 - Evidence-pack form with HTMX command preview.
-- Evidence-pack execution with timestamped run folders.
+- Output folder preview for the next evidence run.
+- Evidence-pack execution with timestamped run folders, polling progress and cancellation.
 - Results list for saved evidence runs.
-- Result detail view with run metadata, source coverage, command, rendered evidence, warnings and logs.
+- Result detail view with run metadata, source coverage, command, rendered evidence, warnings, logs, saved-file links and local open actions.
+- Previous-run filters and re-run from saved request metadata.
 - Health endpoint.
 - Route tests.
 
 Not implemented yet:
 
-- Streaming long-running command progress.
-- Cancellation for long-running evidence commands.
 - Deterministic analysis.
 
 ## Settings
