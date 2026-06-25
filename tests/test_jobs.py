@@ -28,7 +28,7 @@ def test_start_evidence_pack_job_streams_logs(tmp_path) -> None:
     processes = []
 
     def fake_popen(command, **kwargs):
-        process = FakeProcess(command, stdout=["started\n", "done\n"], stderr=["warn\n"])
+        process = FakeProcess(command, stdout=["started\n", "done\n"], stderr=["warning: partial data\n"])
         processes.append(process)
         return process
 
@@ -42,10 +42,12 @@ def test_start_evidence_pack_job_streams_logs(tmp_path) -> None:
 
     assert job.exit_code == 0
     assert job.stdout == "started\ndone\n"
-    assert job.stderr == "warn\n"
+    assert job.stderr == "warning: partial data\n"
     assert (job.run_dir / "stdout.log").read_text(encoding="utf-8") == "started\ndone\n"
-    assert (job.run_dir / "stderr.log").read_text(encoding="utf-8") == "warn\n"
+    assert (job.run_dir / "stderr.log").read_text(encoding="utf-8") == "warning: partial data\n"
     assert (job.run_dir / "exit-code.txt").read_text(encoding="utf-8") == "0\n"
+    assert "warning: partial data" in (job.run_dir / "gaps-and-warnings.md").read_text(encoding="utf-8")
+    assert '"kind": "warning"' in (job.run_dir / "gaps-and-warnings.json").read_text(encoding="utf-8")
     assert processes[0].command[-2] == "--out"
 
 

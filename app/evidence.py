@@ -15,6 +15,16 @@ from app.settings import AppSettings
 
 PRESETS = ("architecture", "delivery", "operations", "dataverse", "performance", "risk")
 SOURCES = ("confluence", "jira", "azure", "dataverse", "code")
+RUN_FILES = {
+    "request.json",
+    "command.txt",
+    "stdout.log",
+    "stderr.log",
+    "exit-code.txt",
+    "evidence-pack.md",
+    "gaps-and-warnings.md",
+    "gaps-and-warnings.json",
+}
 
 
 @dataclass(frozen=True)
@@ -202,6 +212,7 @@ def run_evidence_pack(
     (run_dir / "stdout.log").write_text(stdout, encoding="utf-8")
     (run_dir / "stderr.log").write_text(stderr, encoding="utf-8")
     (run_dir / "exit-code.txt").write_text(str(exit_code) + "\n", encoding="utf-8")
+    write_gaps_and_warnings(run_dir, stderr=stderr)
     return EvidenceRunResult(
         run_dir=run_dir,
         command=command,
@@ -278,12 +289,30 @@ def form_from_saved_request(request: dict[str, Any], defaults: AppSettings | Non
 
 
 def run_file_path(settings: AppSettings, run_id: str, filename: str) -> Path | None:
-    if filename not in {"request.json", "command.txt", "stdout.log", "stderr.log", "exit-code.txt", "evidence-pack.md"}:
+    if filename not in RUN_FILES:
         return None
     if "/" in run_id or "\\" in run_id or run_id in {"", ".", ".."}:
         return None
     path = evidence_runs_root(settings) / run_id / filename
     return path if path.exists() and path.is_file() else None
+
+
+def write_gaps_and_warnings(run_dir: Path, *, evidence_markdown: str | None = None, stderr: str | None = None) -> tuple[str, ...]:
+    evidence_markdown = _read_text(run_dir / "evidence-pack.md") if evidence_markdown is None else evidence_markdown
+    stderr = _read_text(run_dir / "stderr.log") if stderr is None else stderr
+    items = _extract_warnings(evidence_markdown, stderr)
+    payload = {
+        "items": [
+            {
+                "kind": _gap_or_warning(item),
+                "text": item,
+            }
+            for item in items
+        ]
+    }
+    (run_dir / "gaps-and-warnings.json").write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    (run_dir / "gaps-and-warnings.md").write_text(_gaps_and_warnings_markdown(items), encoding="utf-8")
+    return items
 
 
 def open_run_folder(settings: AppSettings, run_id: str, *, runner=subprocess.run) -> FileActionResult:
@@ -457,6 +486,23 @@ def _extract_warnings(markdown: str, stderr: str) -> tuple[str, ...]:
             if stripped:
                 warnings.append(stripped)
     return tuple(warnings[:20])
+
+
+def _gap_or_warning(item: str) -> str:
+    lowered = item.lower()
+    if "gap" in lowered:
+        return "gap"
+    return "warning"
+
+
+def _gaps_and_warnings_markdown(items: tuple[str, ...]) -> str:
+    lines = ["# Gaps and Warnings", ""]
+    if not items:
+        lines.append("_No gaps or warnings detected._")
+    else:
+        lines.extend(f"- {item}" for item in items)
+    lines.append("")
+    return "\n".join(lines)
 
 
 def _run_file_action(command: list[str], success_message: str, *, runner=subprocess.run) -> FileActionResult:

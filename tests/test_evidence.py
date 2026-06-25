@@ -16,6 +16,7 @@ from app.evidence import (
     output_folder_preview,
     render_markdown,
     run_evidence_pack,
+    run_file_path,
     shell_command,
 )
 from app.settings import AppSettings
@@ -134,8 +135,8 @@ def test_run_evidence_pack_writes_metadata_and_logs(tmp_path) -> None:
     def fake_runner(command, **kwargs):
         out_path = command[command.index("--out") + 1]
         with open(out_path, "w", encoding="utf-8") as handle:
-            handle.write("# Evidence\n")
-        return subprocess.CompletedProcess(command, 0, stdout="done", stderr="")
+            handle.write("# Evidence\n\n- gap: missing Jira context\n")
+        return subprocess.CompletedProcess(command, 0, stdout="done", stderr="warning: partial data\n")
 
     result = run_evidence_pack(
         EvidenceForm(topic="booking", sources=("confluence",), confluence_space="SPACE"),
@@ -149,6 +150,8 @@ def test_run_evidence_pack_writes_metadata_and_logs(tmp_path) -> None:
     assert (result.run_dir / "command.txt").read_text(encoding="utf-8").startswith("/tmp/assurance report evidence-pack")
     assert (result.run_dir / "stdout.log").read_text(encoding="utf-8") == "done"
     assert (result.run_dir / "exit-code.txt").read_text(encoding="utf-8") == "0\n"
+    assert "- gap: missing Jira context" in (result.run_dir / "gaps-and-warnings.md").read_text(encoding="utf-8")
+    assert "warning: partial data" in (result.run_dir / "gaps-and-warnings.json").read_text(encoding="utf-8")
 
 
 def test_run_evidence_pack_records_timeout(tmp_path) -> None:
@@ -248,6 +251,17 @@ def test_load_evidence_run_rejects_path_traversal(tmp_path) -> None:
     detail = load_evidence_run(AppSettings(workbench_root=str(tmp_path)), "../secret")
 
     assert detail is None
+
+
+def test_run_file_path_allows_gaps_and_warnings_artifacts(tmp_path) -> None:
+    run_dir = tmp_path / "runs" / "2026-06-25-090000-booking"
+    run_dir.mkdir(parents=True)
+    artifact = run_dir / "gaps-and-warnings.json"
+    artifact.write_text('{"items": []}\n', encoding="utf-8")
+
+    path = run_file_path(AppSettings(workbench_root=str(tmp_path)), run_dir.name, "gaps-and-warnings.json")
+
+    assert path == artifact
 
 
 def test_open_run_folder_uses_local_open_command(tmp_path) -> None:

@@ -8,7 +8,7 @@ from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import Callable
 
-from app.evidence import EvidenceForm, build_run_command, create_run_dir, shell_command
+from app.evidence import EvidenceForm, build_run_command, create_run_dir, shell_command, write_gaps_and_warnings
 from app.settings import AppSettings
 
 
@@ -98,3 +98,4 @@ def _watch_process(job: EvidenceJob, process: subprocess.Popen, timeout: int) ->
         exit_code = 130
     job.exit_code = int(exit_code)
     (job.run_dir / "exit-code.txt").write_text(str(job.exit_code) + "\n", encoding="utf-8")
+    write_gaps_and_warnings(job.run_dir, stderr=job.stderr)
