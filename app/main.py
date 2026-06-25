@@ -27,7 +27,7 @@ from app.settings import load_settings, save_settings, settings_from_form, setti
 
 BASE_DIR = Path(__file__).resolve().parent
 
-app = FastAPI(title="Assurance Workbench UI")
+app = FastAPI(title="Assure-O-Matic 3000 Workbench")
 app.mount("/static", StaticFiles(directory=BASE_DIR / "static"), name="static")
 
 templates = Jinja2Templates(directory=BASE_DIR / "templates")
@@ -42,7 +42,7 @@ def home(request: Request) -> HTMLResponse:
         "home.html",
         {
             "active_nav": "home",
-            "title": "Assurance Workbench",
+            "title": "Assure-O-Matic 3000 Workbench",
             "settings": current_settings,
             "output_preview": output_folder_preview(current_settings.workbench_root, default_form),
         },
