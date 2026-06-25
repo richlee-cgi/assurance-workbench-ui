@@ -1,7 +1,7 @@
 from fastapi.testclient import TestClient
 
 from app.cli import CliCheckResult, CodeRepoDiscoveryResult
-from app.evidence import EvidenceRunDetail, EvidenceRunResult, EvidenceRunSummary, FileActionResult
+from app.evidence import EvidenceRunDetail, EvidenceRunResult, EvidenceRunSummary, FileActionResult, GapWarningItem
 from app.jobs import EvidenceJob
 from app.main import app
 from app.settings import SETTINGS_PATH_ENV
@@ -383,6 +383,14 @@ def test_run_detail_page(monkeypatch, tmp_path) -> None:
         evidence_markdown="# Evidence",
         evidence_html="<h1>Evidence</h1>",
         warnings=("gap: missing Jira context",),
+        warning_items=(
+            GapWarningItem(
+                kind="gap",
+                text="gap: missing Jira context",
+                criteria=('contains "gap"',),
+                locations=("jira: DSP-123 (https://example.atlassian.net/browse/DSP-123)",),
+            ),
+        ),
     )
     monkeypatch.setattr("app.main.load_evidence_run", lambda settings, run_id: detail)
 
@@ -399,6 +407,8 @@ def test_run_detail_page(monkeypatch, tmp_path) -> None:
     assert "assurance report evidence-pack booking --include-azure" in response.text
     assert "<h1>Evidence</h1>" in response.text
     assert "gap: missing Jira context" in response.text
+    assert "contains &#34;gap&#34;" in response.text
+    assert "jira: DSP-123" in response.text
 
 
 def test_run_detail_page_reports_missing(monkeypatch) -> None:
@@ -479,6 +489,7 @@ def test_rerun_route(monkeypatch, tmp_path) -> None:
         evidence_markdown="",
         evidence_html="",
         warnings=(),
+        warning_items=(),
     )
     captured = {}
 

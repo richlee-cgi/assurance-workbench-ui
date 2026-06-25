@@ -183,6 +183,8 @@ def test_run_evidence_pack_writes_metadata_and_logs(tmp_path) -> None:
     assert (result.run_dir / "exit-code.txt").read_text(encoding="utf-8") == "0\n"
     assert "- gap: missing Jira context" in (result.run_dir / "gaps-and-warnings.md").read_text(encoding="utf-8")
     assert "warning: partial data" in (result.run_dir / "gaps-and-warnings.json").read_text(encoding="utf-8")
+    assert '"criteria":' in (result.run_dir / "gaps-and-warnings.json").read_text(encoding="utf-8")
+    assert '"locations":' in (result.run_dir / "gaps-and-warnings.json").read_text(encoding="utf-8")
 
 
 def test_run_evidence_pack_records_timeout(tmp_path) -> None:
@@ -301,6 +303,9 @@ def test_gaps_and_warnings_markdown_formats_table_rows(tmp_path) -> None:
         with open(out_path, "w", encoding="utf-8") as handle:
             handle.write(
                 "# Evidence\n\n"
+                "## Confluence Evidence\n\n"
+                "## Booking Decisions\n\n"
+                "- URL: https://example.atlassian.net/wiki/spaces/DSP/pages/123/Booking\n\n"
                 "| ❌ Gap | Not defined |\n\n"
                 "* identify gaps, inconsistencies, or missing behaviours\n\n"
                 "## Gaps / Follow-up Questions\n\n"
@@ -319,6 +324,8 @@ def test_gaps_and_warnings_markdown_formats_table_rows(tmp_path) -> None:
     assert "|   |   |" in markdown
     assert "| --- | --- |" in markdown
     assert "| ❌ Gap | Not defined |" in markdown
+    assert "- **Source:** confluence: Booking Decisions (https://example.atlassian.net/wiki/spaces/DSP/pages/123/Booking)" in markdown
+    assert '- **Criteria:** contains "gap"' in markdown
     assert "```text" not in markdown
     assert "identify gaps" not in markdown
     assert "Gaps / Follow-up Questions" not in markdown

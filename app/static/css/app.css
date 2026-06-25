@@ -448,6 +448,24 @@ pre {
   overflow-wrap: anywhere;
 }
 
+.compact-metadata {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 4px 10px;
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.compact-metadata dt {
+  font-weight: 700;
+}
+
+.compact-metadata dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
 .ok-text {
   color: #05603a;
   font-weight: 700;

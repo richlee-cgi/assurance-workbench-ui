@@ -83,6 +83,15 @@ class EvidenceRunDetail:
     evidence_markdown: str
     evidence_html: str
     warnings: tuple[str, ...]
+    warning_items: tuple[GapWarningItem, ...]
+
+
+@dataclass(frozen=True)
+class GapWarningItem:
+    kind: str
+    text: str
+    criteria: tuple[str, ...]
+    locations: tuple[str, ...]
 
 
 @dataclass(frozen=True)
@@ -283,6 +292,7 @@ def load_evidence_run(settings: AppSettings, run_id: str) -> EvidenceRunDetail |
     stdout = _read_text(run_dir / "stdout.log")
     stderr = _read_text(run_dir / "stderr.log")
     evidence_markdown = _read_text(summary.evidence_path)
+    warning_items = _extract_warning_items(evidence_markdown, stderr)
     return EvidenceRunDetail(
         summary=summary,
         request=request,
@@ -290,7 +300,8 @@ def load_evidence_run(settings: AppSettings, run_id: str) -> EvidenceRunDetail |
         stderr=stderr,
         evidence_markdown=evidence_markdown,
         evidence_html=render_markdown(evidence_markdown),
-        warnings=_extract_warnings(evidence_markdown, stderr),
+        warnings=tuple(item.text for item in warning_items),
+        warning_items=warning_items,
     )
 
 
@@ -312,19 +323,21 @@ def run_file_path(settings: AppSettings, run_id: str, filename: str) -> Path | N
 def write_gaps_and_warnings(run_dir: Path, *, evidence_markdown: str | None = None, stderr: str | None = None) -> tuple[str, ...]:
     evidence_markdown = _read_text(run_dir / "evidence-pack.md") if evidence_markdown is None else evidence_markdown
     stderr = _read_text(run_dir / "stderr.log") if stderr is None else stderr
-    items = _extract_warnings(evidence_markdown, stderr)
+    structured_items = _extract_warning_items(evidence_markdown, stderr)
     payload = {
         "items": [
             {
-                "kind": _gap_or_warning(item),
-                "text": item,
+                "kind": item.kind,
+                "text": item.text,
+                "criteria": list(item.criteria),
+                "locations": list(item.locations),
             }
-            for item in items
+            for item in structured_items
         ]
     }
     (run_dir / "gaps-and-warnings.json").write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
-    (run_dir / "gaps-and-warnings.md").write_text(_gaps_and_warnings_markdown(items), encoding="utf-8")
-    return items
+    (run_dir / "gaps-and-warnings.md").write_text(_gaps_and_warnings_markdown(structured_items), encoding="utf-8")
+    return tuple(item.text for item in structured_items)
 
 
 def open_run_folder(settings: AppSettings, run_id: str, *, runner=subprocess.run) -> FileActionResult:
@@ -490,20 +503,80 @@ def _read_exit_code(path: Path) -> int | None:
 
 
 def _extract_warnings(markdown: str, stderr: str) -> tuple[str, ...]:
-    warnings: list[str] = []
-    for line in (markdown + "\n" + stderr).splitlines():
-        lowered = line.lower()
-        if "no mechanical gaps identified" in lowered:
-            continue
-        if "identify gaps, inconsistencies, or missing behaviours" in lowered:
-            continue
-        if "warning" in lowered or "warn:" in lowered or "gap" in lowered:
-            stripped = line.strip()
-            if stripped.startswith("#"):
-                continue
-            if stripped:
-                warnings.append(stripped)
-    return tuple(warnings[:20])
+    return tuple(item.text for item in _extract_warning_items(markdown, stderr))
+
+
+def _extract_warning_items(markdown: str, stderr: str) -> tuple[GapWarningItem, ...]:
+    items: dict[tuple[str, tuple[str, ...]], GapWarningItem] = {}
+    current_section = ""
+    pending_heading = ""
+    current_location = "evidence-pack.md"
+    for line in markdown.splitlines():
+        stripped = line.strip()
+        if stripped.startswith("## "):
+            heading = _clean_heading(stripped[3:])
+            if heading in {"Confluence Evidence", "Jira Evidence", "Azure Evidence", "Dataverse Evidence", "Code Evidence"}:
+                current_section = heading.removesuffix(" Evidence").lower()
+                current_location = f"{current_section}: evidence-pack.md"
+            elif heading not in {
+                "Search Summary",
+                "Status Summary",
+                "Search Exclusions",
+                "Sources Queried",
+                "Scope",
+                "Gaps / Follow-up Questions",
+                "Appendix: Commands Run",
+            }:
+                pending_heading = heading
+        elif stripped.startswith("- URL:"):
+            url = stripped.removeprefix("- URL:").strip()
+            title = pending_heading or current_section or "source"
+            prefix = f"{current_section}: " if current_section else ""
+            current_location = f"{prefix}{title} ({url})"
+        _record_warning_item(items, stripped, current_location)
+    for line in stderr.splitlines():
+        _record_warning_item(items, line.strip(), "stderr.log")
+    return tuple(items.values())[:20]
+
+
+def _record_warning_item(items: dict[tuple[str, tuple[str, ...]], GapWarningItem], line: str, location: str) -> None:
+    if not line:
+        return
+    lowered = line.lower()
+    if "no mechanical gaps identified" in lowered:
+        return
+    if "identify gaps, inconsistencies, or missing behaviours" in lowered:
+        return
+    if line.startswith("#"):
+        return
+    criteria = _warning_criteria(line)
+    if not criteria:
+        return
+    key = (line, criteria)
+    existing = items.get(key)
+    if existing:
+        locations = existing.locations
+        if location not in locations:
+            locations = (*locations, location)
+        items[key] = GapWarningItem(existing.kind, existing.text, existing.criteria, locations)
+        return
+    items[key] = GapWarningItem(_gap_or_warning(line), line, criteria, (location,))
+
+
+def _warning_criteria(line: str) -> tuple[str, ...]:
+    lowered = line.lower()
+    criteria = []
+    if "gap" in lowered:
+        criteria.append('contains "gap"')
+    if "warning" in lowered:
+        criteria.append('contains "warning"')
+    if "warn:" in lowered:
+        criteria.append('contains "warn:"')
+    return tuple(criteria)
+
+
+def _clean_heading(value: str) -> str:
+    return value.strip().strip("*`").strip()
 
 
 def _gap_or_warning(item: str) -> str:
@@ -513,18 +586,30 @@ def _gap_or_warning(item: str) -> str:
     return "warning"
 
 
-def _gaps_and_warnings_markdown(items: tuple[str, ...]) -> str:
+def _gaps_and_warnings_markdown(items: tuple[GapWarningItem, ...]) -> str:
     lines = ["# Gaps and Warnings", ""]
     if not items:
         lines.append("_No gaps or warnings detected._")
     else:
         for index, item in enumerate(items, 1):
-            lines.append(f"## {index}. {_gap_or_warning(item).title()}")
+            lines.append(f"## {index}. {item.kind.title()}")
             lines.append("")
-            lines.extend(_format_gap_or_warning_item(item))
+            lines.extend(_format_gap_or_warning_item(item.text))
+            lines.append("")
+            lines.extend(_format_metadata_lines("Source", item.locations))
+            lines.extend(_format_metadata_lines("Criteria", item.criteria))
             lines.append("")
     lines.append("")
     return "\n".join(lines)
+
+
+def _format_metadata_lines(label: str, values: tuple[str, ...]) -> list[str]:
+    if not values:
+        return []
+    if len(values) == 1:
+        return [f"- **{label}:** {_escape_markdown_inline(values[0])}"]
+    joined = "; ".join(_escape_markdown_inline(value) for value in values)
+    return [f"- **{label}s:** {joined}"]
 
 
 def _format_gap_or_warning_item(item: str) -> list[str]:
