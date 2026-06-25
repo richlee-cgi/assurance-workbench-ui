@@ -495,6 +495,8 @@ def _extract_warnings(markdown: str, stderr: str) -> tuple[str, ...]:
         lowered = line.lower()
         if "no mechanical gaps identified" in lowered:
             continue
+        if "identify gaps, inconsistencies, or missing behaviours" in lowered:
+            continue
         if "warning" in lowered or "warn:" in lowered or "gap" in lowered:
             stripped = line.strip()
             if stripped.startswith("#"):
@@ -519,12 +521,32 @@ def _gaps_and_warnings_markdown(items: tuple[str, ...]) -> str:
         for index, item in enumerate(items, 1):
             lines.append(f"## {index}. {_gap_or_warning(item).title()}")
             lines.append("")
-            lines.append("```text")
-            lines.append(item)
-            lines.append("```")
+            lines.extend(_format_gap_or_warning_item(item))
             lines.append("")
     lines.append("")
     return "\n".join(lines)
+
+
+def _format_gap_or_warning_item(item: str) -> list[str]:
+    table_cells = _markdown_table_cells(item)
+    if table_cells:
+        lines = ["Extracted table row:", ""]
+        for index, cell in enumerate(table_cells, 1):
+            lines.append(f"- **Column {index}:** {_escape_markdown_inline(cell)}")
+        return lines
+    return [_escape_markdown_inline(item)]
+
+
+def _markdown_table_cells(item: str) -> list[str]:
+    stripped = item.strip()
+    if not stripped.startswith("|") or "|" not in stripped[1:]:
+        return []
+    cells = [cell.strip() for cell in stripped.strip("|").split("|")]
+    return [cell for cell in cells if cell]
+
+
+def _escape_markdown_inline(value: str) -> str:
+    return value.replace("|", r"\|")
 
 
 def _run_file_action(command: list[str], success_message: str, *, runner=subprocess.run) -> FileActionResult:

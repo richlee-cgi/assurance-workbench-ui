@@ -295,11 +295,17 @@ def test_run_file_path_allows_gaps_and_warnings_artifacts(tmp_path) -> None:
     assert path == artifact
 
 
-def test_gaps_and_warnings_markdown_uses_fenced_blocks(tmp_path) -> None:
+def test_gaps_and_warnings_markdown_formats_table_rows(tmp_path) -> None:
     def fake_runner(command, **kwargs):
         out_path = command[command.index("--out") + 1]
         with open(out_path, "w", encoding="utf-8") as handle:
-            handle.write("# Evidence\n\n| ❌ Gap | Not defined |\n\n## Gaps / Follow-up Questions\n\n_No mechanical gaps identified by the retrieval commands._\n")
+            handle.write(
+                "# Evidence\n\n"
+                "| ❌ Gap | Not defined |\n\n"
+                "* identify gaps, inconsistencies, or missing behaviours\n\n"
+                "## Gaps / Follow-up Questions\n\n"
+                "_No mechanical gaps identified by the retrieval commands._\n"
+            )
         return subprocess.CompletedProcess(command, 0, stdout="", stderr="")
 
     result = run_evidence_pack(
@@ -310,7 +316,11 @@ def test_gaps_and_warnings_markdown_uses_fenced_blocks(tmp_path) -> None:
 
     markdown = (result.run_dir / "gaps-and-warnings.md").read_text(encoding="utf-8")
     assert "## 1. Gap" in markdown
-    assert "```text\n| ❌ Gap | Not defined |\n```" in markdown
+    assert "Extracted table row" in markdown
+    assert "- **Column 1:** ❌ Gap" in markdown
+    assert "- **Column 2:** Not defined" in markdown
+    assert "```text" not in markdown
+    assert "identify gaps" not in markdown
     assert "Gaps / Follow-up Questions" not in markdown
     assert "No mechanical gaps identified" not in markdown
 
