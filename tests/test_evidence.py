@@ -58,12 +58,43 @@ def test_build_evidence_command_with_selected_sources() -> None:
 def test_evidence_form_uses_defaults() -> None:
     form = evidence_form_from_data(
         {"sources": ["confluence", "jira"], "limit": "20"},
-        AppSettings(confluence_space="SPACE", jira_project="ABC", azure_resource_group="rg"),
+        AppSettings(confluence_space="SPACE", jira_project="ABC", azure_resource_group="rg", repo_roots="/tmp/dev", repos="service-a"),
     )
 
     assert form.confluence_space == "SPACE"
     assert form.jira_project == "ABC"
+    assert form.repo_roots == ("/tmp/dev",)
+    assert form.repos == ("service-a",)
     assert form.limit == 20
+
+
+def test_build_evidence_command_with_code_source() -> None:
+    command = build_evidence_command(
+        EvidenceForm(
+            topic="booking",
+            sources=("code",),
+            repo_roots=("/tmp/dev",),
+            repos=("booking-service", "shared-lib"),
+        )
+    )
+
+    assert command == [
+        "assurance",
+        "report",
+        "evidence-pack",
+        "booking",
+        "--skip-confluence",
+        "--skip-jira",
+        "--include-code",
+        "--repo-root",
+        "/tmp/dev",
+        "--repo",
+        "booking-service",
+        "--repo",
+        "shared-lib",
+        "--limit",
+        "10",
+    ]
 
 
 def test_evidence_form_allows_no_sources_from_ui() -> None:

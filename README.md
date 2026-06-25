@@ -36,7 +36,7 @@ Implemented first slice:
 - Settings page with local persistence.
 - Assurance CLI health check.
 - Azure and Dataverse CLI health checks through `assurance-cli`.
-- Evidence-pack form with HTMX command preview.
+- Evidence-pack form with HTMX command preview, including optional local code repository evidence.
 - Output folder preview for the next evidence run.
 - Evidence-pack execution with timestamped run folders, polling progress and cancellation.
 - Results list for saved evidence runs.
@@ -60,6 +60,8 @@ Stored values:
 - `confluence_space`
 - `jira_project`
 - `azure_resource_group`
+- `repo_roots`
+- `repos`
 
 The UI does not store API tokens or credentials.
 

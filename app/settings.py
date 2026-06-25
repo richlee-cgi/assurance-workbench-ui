@@ -18,6 +18,8 @@ class AppSettings:
     confluence_space: str = ""
     jira_project: str = ""
     azure_resource_group: str = ""
+    repo_roots: str = ""
+    repos: str = ""
 
 
 def settings_path() -> Path:
@@ -46,6 +48,8 @@ def settings_from_form(data: Any) -> AppSettings:
         confluence_space=str(data.get("confluence_space", "")).strip(),
         jira_project=str(data.get("jira_project", "")).strip(),
         azure_resource_group=str(data.get("azure_resource_group", "")).strip(),
+        repo_roots=str(data.get("repo_roots", "")).strip(),
+        repos=str(data.get("repos", "")).strip(),
     )
 
 

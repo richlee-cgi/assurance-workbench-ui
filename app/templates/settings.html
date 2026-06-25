@@ -36,6 +36,16 @@
       <input type="text" name="azure_resource_group" value="{{ settings.azure_resource_group }}" placeholder="rg-example-dev">
     </label>
 
+    <label>
+      Default repo roots
+      <textarea name="repo_roots" placeholder="/Users/example/dev">{{ settings.repo_roots }}</textarea>
+    </label>
+
+    <label>
+      Default repos
+      <textarea name="repos" placeholder="service-a&#10;service-b">{{ settings.repos }}</textarea>
+    </label>
+
     <div class="form-actions">
       <button type="submit">Save settings</button>
       <button type="button" hx-post="/settings/check-assurance" hx-include="#settings-form" hx-target="#cli-check-result" hx-swap="innerHTML">

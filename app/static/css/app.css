@@ -118,6 +118,7 @@ legend {
 
 input,
 select,
+textarea,
 button {
   width: 100%;
   min-height: 40px;
@@ -126,6 +127,11 @@ button {
   border: 1px solid var(--border);
   border-radius: 6px;
   font: inherit;
+}
+
+textarea {
+  min-height: 86px;
+  resize: vertical;
 }
 
 button {

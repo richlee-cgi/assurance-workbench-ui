@@ -18,6 +18,8 @@ def test_home_page() -> None:
     assert "Evidence pack runner" in response.text
     assert "hx-post=\"/preview-command\"" in response.text
     assert "Output folder" in response.text
+    assert "Code repositories" in response.text
+    assert "Repo roots" in response.text
 
 
 def test_settings_page() -> None:
@@ -26,6 +28,7 @@ def test_settings_page() -> None:
     assert response.status_code == 200
     assert "Assurance executable" in response.text
     assert "Workbench evidence root" in response.text
+    assert "Default repo roots" in response.text
     assert "hx-post=\"/settings\"" in response.text
 
 
@@ -55,6 +58,8 @@ def test_save_settings_route(monkeypatch, tmp_path) -> None:
             "confluence_space": "SPACE",
             "jira_project": "ABC",
             "azure_resource_group": "rg",
+            "repo_roots": "/tmp/dev",
+            "repos": "booking-service",
         },
     )
 
@@ -117,6 +122,26 @@ def test_preview_command_route() -> None:
     assert "--azure-resource-group rg" in response.text
     assert "--refresh" in response.text
     assert "&lt;timestamp&gt;-booking-allocation" in response.text
+
+
+def test_preview_command_route_with_code_source() -> None:
+    response = client.post(
+        "/preview-command",
+        data={
+            "topic": "booking",
+            "sources": ["code"],
+            "sources_present": "1",
+            "repo_roots": "/tmp/dev",
+            "repos": "booking-service\nshared-lib",
+            "limit": "5",
+        },
+    )
+
+    assert response.status_code == 200
+    assert "--include-code" in response.text
+    assert "--repo-root /tmp/dev" in response.text
+    assert "--repo booking-service" in response.text
+    assert "--repo shared-lib" in response.text
 
 
 def test_run_evidence_pack_route(monkeypatch, tmp_path) -> None:

@@ -44,6 +44,16 @@
     </label>
 
     <label>
+      Repo roots
+      <textarea name="repo_roots" placeholder="/Users/example/dev">{{ settings.repo_roots }}</textarea>
+    </label>
+
+    <label>
+      Repos
+      <textarea name="repos" placeholder="service-a&#10;service-b">{{ settings.repos }}</textarea>
+    </label>
+
+    <label>
       Limit
       <input type="number" name="limit" value="10" min="1">
     </label>
@@ -54,6 +64,7 @@
       <label><input type="checkbox" name="sources" value="jira" checked> Jira</label>
       <label><input type="checkbox" name="sources" value="azure"> Azure</label>
       <label><input type="checkbox" name="sources" value="dataverse"> Dataverse</label>
+      <label><input type="checkbox" name="sources" value="code"> Code repositories</label>
     </fieldset>
 
     <fieldset>

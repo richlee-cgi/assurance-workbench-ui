@@ -14,7 +14,7 @@ from app.settings import AppSettings
 
 
 PRESETS = ("architecture", "dataverse", "scaling")
-SOURCES = ("confluence", "jira", "azure", "dataverse")
+SOURCES = ("confluence", "jira", "azure", "dataverse", "code")
 
 
 @dataclass(frozen=True)
@@ -25,6 +25,8 @@ class EvidenceForm:
     confluence_space: str = ""
     jira_project: str = ""
     azure_resource_group: str = ""
+    repo_roots: tuple[str, ...] = ()
+    repos: tuple[str, ...] = ()
     limit: int = 10
     include_comments: bool = False
     refresh: bool = False
@@ -93,6 +95,8 @@ def evidence_form_from_data(data: Any, defaults: AppSettings | None = None) -> E
         confluence_space=str(data.get("confluence_space") or defaults.confluence_space).strip(),
         jira_project=str(data.get("jira_project") or defaults.jira_project).strip(),
         azure_resource_group=str(data.get("azure_resource_group") or defaults.azure_resource_group).strip(),
+        repo_roots=_split_lines_or_commas(str(data.get("repo_roots") or defaults.repo_roots)),
+        repos=_split_lines_or_commas(str(data.get("repos") or defaults.repos)),
         limit=_positive_int(data.get("limit"), default=10),
         include_comments=_as_bool(data.get("include_comments")),
         refresh=_as_bool(data.get("refresh")),
@@ -120,6 +124,12 @@ def build_evidence_command(form: EvidenceForm) -> list[str]:
             command.extend(["--azure-resource-group", form.azure_resource_group])
     if "dataverse" in form.sources:
         command.append("--include-dataverse")
+    if "code" in form.sources:
+        command.append("--include-code")
+        for root in form.repo_roots:
+            command.extend(["--repo-root", root])
+        for repo in form.repos:
+            command.extend(["--repo", repo])
     command.extend(["--limit", str(form.limit)])
     if form.include_comments:
         command.append("--include-comments")
@@ -359,6 +369,11 @@ def _positive_int(value: Any, *, default: int) -> int:
 
 def _as_bool(value: Any) -> bool:
     return str(value).lower() in {"1", "true", "yes", "on"}
+
+
+def _split_lines_or_commas(value: str) -> tuple[str, ...]:
+    normalized = value.replace(",", "\n")
+    return tuple(item.strip() for item in normalized.splitlines() if item.strip())
 
 
 def _slug(value: str) -> str:

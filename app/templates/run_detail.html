@@ -39,7 +39,7 @@
     <section>
       <h3>Source coverage</h3>
       <ul class="coverage-list">
-        {% for source in ["confluence", "jira", "azure", "dataverse"] %}
+        {% for source in ["confluence", "jira", "azure", "dataverse", "code"] %}
           <li class="{{ 'covered' if source in detail.summary.sources else 'skipped' }}">
             <span>{{ source }}</span>
             <strong>{{ 'included' if source in detail.summary.sources else 'skipped' }}</strong>

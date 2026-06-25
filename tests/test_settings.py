@@ -11,6 +11,8 @@ def test_save_and_load_settings(tmp_path: Path) -> None:
         confluence_space="SPACE",
         jira_project="ABC",
         azure_resource_group="rg",
+        repo_roots="/tmp/dev",
+        repos="service-a",
     )
 
     save_settings(settings, path)
@@ -26,9 +28,15 @@ def test_settings_from_form_strips_values() -> None:
             "confluence_space": " SPACE ",
             "jira_project": " ABC ",
             "azure_resource_group": " rg ",
+            "repo_roots": " /tmp/dev ",
+            "repos": " service-a ",
         }
     )
 
     assert settings.assurance_path == "/tmp/assurance"
     assert settings.workbench_root == "/tmp/workbench"
     assert settings.confluence_space == "SPACE"
+    assert settings.jira_project == "ABC"
+    assert settings.azure_resource_group == "rg"
+    assert settings.repo_roots == "/tmp/dev"
+    assert settings.repos == "service-a"
