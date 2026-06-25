@@ -248,6 +248,35 @@ fieldset input {
   grid-column: 1 / -1;
 }
 
+.guide-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 22px 28px;
+}
+
+.guide article {
+  min-width: 0;
+}
+
+.guide h3 {
+  margin: 0 0 8px;
+}
+
+.guide p,
+.guide li {
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+.guide p {
+  margin: 0 0 10px;
+}
+
+.guide ul {
+  margin: 0;
+  padding-left: 20px;
+}
+
 .filter-form {
   display: grid;
   grid-template-columns: minmax(180px, 1fr) minmax(160px, 220px) minmax(160px, 220px) auto;
@@ -509,6 +538,7 @@ pre {
 
   .grid-form,
   fieldset,
+  .guide-grid,
   .metadata-grid,
   .run-row,
   .repo-list div,

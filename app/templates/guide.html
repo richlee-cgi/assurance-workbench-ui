@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="panel guide">
+  <div class="section-header">
+    <div>
+      <h2>User Guide</h2>
+    </div>
+    <span class="status-pill">Local only</span>
+  </div>
+
+  <div class="guide-grid">
+    <article>
+      <h3>What this tool does</h3>
+      <p>Assurance Workbench is a local browser interface for <code>assurance-cli</code>. It helps configure evidence-pack runs, preview the command, save results into a Workbench evidence folder, and inspect completed runs.</p>
+      <p>The UI does not replace the CLI. The CLI remains the evidence engine.</p>
+    </article>
+
+    <article>
+      <h3>Settings</h3>
+      <p>Use Settings to point the UI at the local <code>assurance</code> executable, choose the evidence output folder, and set default Confluence, Jira, Azure and repository scope.</p>
+      <p>Settings are saved locally in an ignored file. API tokens and credentials are not stored in this UI.</p>
+    </article>
+
+    <article>
+      <h3>Topics and presets</h3>
+      <p>The topic is passed to selected evidence sources as the main search text. Presets provide common assurance search shapes and inclusion defaults.</p>
+      <ul>
+        <li><code>architecture</code>: design decisions, integrations and dependencies.</li>
+        <li><code>delivery</code>: implementation tickets, status, releases and blockers.</li>
+        <li><code>operations</code>: runtime, deployment, monitoring and operational readiness.</li>
+        <li><code>dataverse</code>: Power Platform, solutions, connectors and connection references.</li>
+        <li><code>performance</code>: APIM, Functions, scaling, capacity and timeouts.</li>
+        <li><code>risk</code>: known risks, blockers, incidents, defects, warnings and mitigations.</li>
+      </ul>
+    </article>
+
+    <article>
+      <h3>Sources</h3>
+      <p>Confluence and Jira are queried by default when selected. Azure adds bounded Resource Graph evidence. Dataverse adds a Power Platform snapshot from the current <code>pac</code> profile.</p>
+      <p>Code repositories add local Git evidence from selected repo roots and repositories.</p>
+    </article>
+
+    <article>
+      <h3>Code and GitHub</h3>
+      <p>Code repository evidence prefers local clones. It can include matching file lines, recent commit messages and repository metadata.</p>
+      <p>Include PR metadata when Jira links or local evidence should be connected to pull requests. Include bounded diffs only when a limited PR diff is useful evidence.</p>
+      <p>GitHub fallback allows read-only lookup through <code>gh</code> when PR metadata cannot be resolved locally. It requires local GitHub CLI authentication.</p>
+    </article>
+
+    <article>
+      <h3>Cache options</h3>
+      <p>By default, Atlassian responses are cached by <code>assurance-cli</code> and reused where suitable.</p>
+      <p>Refresh cache bypasses existing entries for the run and updates the cache with fresh responses. No cache disables cache reads and writes for the run.</p>
+    </article>
+
+    <article>
+      <h3>Running evidence packs</h3>
+      <p>The command preview shows the CLI command that will run. The output folder preview shows where the next run will be saved.</p>
+      <p>Start a run from the main page. Long-running runs can be cancelled while they are in progress.</p>
+    </article>
+
+    <article>
+      <h3>Results</h3>
+      <p>The Results page lists saved evidence packs. Use filters to narrow by topic, preset or source.</p>
+      <p>Each result shows metadata, source coverage, command, warnings, logs and links to saved files. Completed runs can be re-run from saved request metadata.</p>
+    </article>
+
+    <article>
+      <h3>Troubleshooting</h3>
+      <p>Use Check assurance CLI, Check Azure and Check Dataverse on the Settings page to verify local tooling.</p>
+      <p>If GitHub fallback or PR evidence fails, check that <code>gh auth status</code> works in the same environment that runs the UI.</p>
+    </article>
+  </div>
+</section>
+{% endblock %}

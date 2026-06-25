@@ -64,6 +64,18 @@ def settings(request: Request) -> HTMLResponse:
     )
 
 
+@app.get("/guide", response_class=HTMLResponse)
+def guide(request: Request) -> HTMLResponse:
+    return templates.TemplateResponse(
+        request,
+        "guide.html",
+        {
+            "active_nav": "guide",
+            "title": "Guide",
+        },
+    )
+
+
 @app.post("/settings", response_class=HTMLResponse)
 async def save_settings_route(request: Request) -> HTMLResponse:
     form = await request.form()

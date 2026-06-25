@@ -40,6 +40,17 @@ def test_settings_page(monkeypatch, tmp_path) -> None:
     assert str(settings_file) in response.text
 
 
+def test_guide_page() -> None:
+    response = client.get("/guide")
+
+    assert response.status_code == 200
+    assert "User Guide" in response.text
+    assert "Topics and presets" in response.text
+    assert "GitHub fallback" in response.text
+    assert "Refresh cache" in response.text
+    assert "class=\"active\">Guide" in response.text
+
+
 def test_health() -> None:
     response = client.get("/health")
 
