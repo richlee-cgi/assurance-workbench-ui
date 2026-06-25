@@ -493,8 +493,12 @@ def _extract_warnings(markdown: str, stderr: str) -> tuple[str, ...]:
     warnings: list[str] = []
     for line in (markdown + "\n" + stderr).splitlines():
         lowered = line.lower()
+        if "no mechanical gaps identified" in lowered:
+            continue
         if "warning" in lowered or "warn:" in lowered or "gap" in lowered:
             stripped = line.strip()
+            if stripped.startswith("#"):
+                continue
             if stripped:
                 warnings.append(stripped)
     return tuple(warnings[:20])
@@ -512,7 +516,13 @@ def _gaps_and_warnings_markdown(items: tuple[str, ...]) -> str:
     if not items:
         lines.append("_No gaps or warnings detected._")
     else:
-        lines.extend(f"- {item}" for item in items)
+        for index, item in enumerate(items, 1):
+            lines.append(f"## {index}. {_gap_or_warning(item).title()}")
+            lines.append("")
+            lines.append("```text")
+            lines.append(item)
+            lines.append("```")
+            lines.append("")
     lines.append("")
     return "\n".join(lines)
 
