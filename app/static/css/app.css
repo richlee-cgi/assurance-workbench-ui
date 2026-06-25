@@ -4,6 +4,7 @@
   --panel: #ffffff;
   --text: #1f2933;
   --muted: #667085;
+  --placeholder: #98a2b3;
   --border: #d9dee7;
   --accent: #155eef;
   --accent-soft: #eaf1ff;
@@ -132,6 +133,12 @@ button {
 textarea {
   min-height: 86px;
   resize: vertical;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--placeholder);
+  opacity: 1;
 }
 
 button {
