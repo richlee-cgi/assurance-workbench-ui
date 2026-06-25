@@ -28,6 +28,10 @@ class EvidenceForm:
     repo_roots: tuple[str, ...] = ()
     repos: tuple[str, ...] = ()
     limit: int = 10
+    include_prs: bool = False
+    include_diffs: bool = False
+    github_fallback: bool = False
+    max_diff_lines: int = 500
     include_comments: bool = False
     refresh: bool = False
     no_cache: bool = False
@@ -98,6 +102,10 @@ def evidence_form_from_data(data: Any, defaults: AppSettings | None = None) -> E
         repo_roots=_split_lines_or_commas(str(data.get("repo_roots") or defaults.repo_roots)),
         repos=_split_lines_or_commas(str(data.get("repos") or defaults.repos)),
         limit=_positive_int(data.get("limit"), default=10),
+        include_prs=_as_bool(data.get("include_prs")),
+        include_diffs=_as_bool(data.get("include_diffs")),
+        github_fallback=_as_bool(data.get("github_fallback")),
+        max_diff_lines=_positive_int(data.get("max_diff_lines"), default=500),
         include_comments=_as_bool(data.get("include_comments")),
         refresh=_as_bool(data.get("refresh")),
         no_cache=_as_bool(data.get("no_cache")),
@@ -130,6 +138,13 @@ def build_evidence_command(form: EvidenceForm) -> list[str]:
             command.extend(["--repo-root", root])
         for repo in form.repos:
             command.extend(["--repo", repo])
+        if form.include_prs:
+            command.append("--include-prs")
+        if form.include_diffs:
+            command.append("--include-diffs")
+        if form.github_fallback:
+            command.append("--github-fallback")
+        command.extend(["--max-diff-lines", str(form.max_diff_lines)])
     command.extend(["--limit", str(form.limit)])
     if form.include_comments:
         command.append("--include-comments")

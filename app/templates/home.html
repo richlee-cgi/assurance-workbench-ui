@@ -54,6 +54,11 @@
     </label>
 
     <label>
+      Max diff lines
+      <input type="number" name="max_diff_lines" value="500" min="1">
+    </label>
+
+    <label>
       Limit
       <input type="number" name="limit" value="10" min="1">
     </label>
@@ -72,9 +77,15 @@
       <label><input type="checkbox" name="include_comments"> Include Jira comments</label>
       <label><input type="checkbox" name="refresh"> Refresh cache</label>
       <label><input type="checkbox" name="no_cache"> No cache</label>
+      <label><input type="checkbox" name="include_prs"> Include PR metadata</label>
+      <label><input type="checkbox" name="include_diffs"> Include bounded diffs</label>
+      <label><input type="checkbox" name="github_fallback"> GitHub fallback</label>
     </fieldset>
 
     <div class="form-actions">
+      <button type="button" hx-post="/discover-code-repos" hx-include="#evidence-form" hx-target="#code-repos" hx-swap="innerHTML">
+        Discover repos
+      </button>
       <button type="button" hx-post="/preview-command" hx-include="#evidence-form" hx-target="#command-preview" hx-swap="innerHTML">
         Preview command
       </button>
@@ -87,6 +98,8 @@
   <div id="command-preview" class="fragment-slot" aria-live="polite">
     {% include "partials/command_preview.html" %}
   </div>
+
+  <div id="code-repos" class="fragment-slot" aria-live="polite"></div>
 
   <div id="run-result" class="fragment-slot" aria-live="polite"></div>
 

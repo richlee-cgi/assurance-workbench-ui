@@ -1,0 +1,18 @@
+<div class="inline-result {{ 'success' if result.ok else 'error' }}">
+  <strong>{{ result.message }}</strong>
+  {% if result.repositories %}
+    <div class="repo-list">
+      {% for repo in result.repositories %}
+        <div>
+          <code>{{ repo.name }}</code>
+          <span>{{ repo.branch or 'unknown' }}</span>
+          <span>{{ 'dirty' if repo.dirty else 'clean' }}</span>
+          <small>{{ repo.path }}</small>
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+  {% if result.stderr %}
+    <pre>{{ result.stderr }}</pre>
+  {% endif %}
+</div>

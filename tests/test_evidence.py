@@ -75,6 +75,10 @@ def test_build_evidence_command_with_code_source() -> None:
             sources=("code",),
             repo_roots=("/tmp/dev",),
             repos=("booking-service", "shared-lib"),
+            include_prs=True,
+            include_diffs=True,
+            github_fallback=True,
+            max_diff_lines=300,
         )
     )
 
@@ -92,6 +96,11 @@ def test_build_evidence_command_with_code_source() -> None:
         "booking-service",
         "--repo",
         "shared-lib",
+        "--include-prs",
+        "--include-diffs",
+        "--github-fallback",
+        "--max-diff-lines",
+        "300",
         "--limit",
         "10",
     ]

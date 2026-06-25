@@ -7,7 +7,7 @@ from fastapi.responses import HTMLResponse, PlainTextResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
-from app.cli import check_assurance_cli, check_azure, check_dataverse
+from app.cli import check_assurance_cli, check_azure, check_dataverse, discover_code_repos
 from app.evidence import (
     build_evidence_command,
     evidence_form_from_data,
@@ -133,6 +133,21 @@ async def preview_command_route(request: Request) -> HTMLResponse:
             "command": command,
             "shell_command": shell_command(command),
             "output_preview": output_folder_preview(current_settings.workbench_root, form),
+        },
+    )
+
+
+@app.post("/discover-code-repos", response_class=HTMLResponse)
+async def discover_code_repos_route(request: Request) -> HTMLResponse:
+    form_data = await request.form()
+    current_settings = load_settings()
+    form = evidence_form_from_data(form_data, current_settings)
+    result = discover_code_repos(current_settings.assurance_path, form.repo_roots)
+    return templates.TemplateResponse(
+        request,
+        "partials/code_repos.html",
+        {
+            "result": result,
         },
     )
 

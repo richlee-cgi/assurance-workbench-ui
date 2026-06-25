@@ -1,6 +1,6 @@
 from fastapi.testclient import TestClient
 
-from app.cli import CliCheckResult
+from app.cli import CliCheckResult, CodeRepoDiscoveryResult
 from app.evidence import EvidenceRunDetail, EvidenceRunResult, EvidenceRunSummary, FileActionResult
 from app.jobs import EvidenceJob
 from app.main import app
@@ -20,6 +20,7 @@ def test_home_page() -> None:
     assert "Output folder" in response.text
     assert "Code repositories" in response.text
     assert "Repo roots" in response.text
+    assert "Discover repos" in response.text
 
 
 def test_settings_page() -> None:
@@ -133,6 +134,10 @@ def test_preview_command_route_with_code_source() -> None:
             "sources_present": "1",
             "repo_roots": "/tmp/dev",
             "repos": "booking-service\nshared-lib",
+            "include_prs": "on",
+            "include_diffs": "on",
+            "github_fallback": "on",
+            "max_diff_lines": "300",
             "limit": "5",
         },
     )
@@ -142,6 +147,28 @@ def test_preview_command_route_with_code_source() -> None:
     assert "--repo-root /tmp/dev" in response.text
     assert "--repo booking-service" in response.text
     assert "--repo shared-lib" in response.text
+    assert "--include-prs" in response.text
+    assert "--include-diffs" in response.text
+    assert "--github-fallback" in response.text
+    assert "--max-diff-lines 300" in response.text
+
+
+def test_discover_code_repos_route(monkeypatch) -> None:
+    monkeypatch.setattr(
+        "app.main.discover_code_repos",
+        lambda path, roots: CodeRepoDiscoveryResult(
+            ok=True,
+            command=[path, "code", "repos", "--raw"],
+            repositories=[{"name": "booking-service", "path": "/tmp/dev/booking-service", "branch": "main", "dirty": False}],
+            message="Discovered 1 repositories.",
+        ),
+    )
+
+    response = client.post("/discover-code-repos", data={"repo_roots": "/tmp/dev"})
+
+    assert response.status_code == 200
+    assert "Discovered 1 repositories" in response.text
+    assert "booking-service" in response.text
 
 
 def test_run_evidence_pack_route(monkeypatch, tmp_path) -> None:

@@ -36,7 +36,8 @@ Implemented first slice:
 - Settings page with local persistence.
 - Assurance CLI health check.
 - Azure and Dataverse CLI health checks through `assurance-cli`.
-- Evidence-pack form with HTMX command preview, including optional local code repository evidence.
+- Evidence-pack form with HTMX command preview, including optional local code repository evidence, PR metadata and bounded diffs.
+- Local repository discovery through `assurance code repos`.
 - Output folder preview for the next evidence run.
 - Evidence-pack execution with timestamped run folders, polling progress and cancellation.
 - Results list for saved evidence runs.
