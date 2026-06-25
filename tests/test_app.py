@@ -15,6 +15,8 @@ def test_home_page() -> None:
 
     assert response.status_code == 200
     assert "Assurance Workbench" in response.text
+    assert "/static/icons/favicon.svg" in response.text
+    assert "/static/manifest.webmanifest" in response.text
     assert "Evidence pack runner" in response.text
     assert "hx-post=\"/preview-command\"" in response.text
     assert "Output folder" in response.text
@@ -64,6 +66,20 @@ def test_htmx_asset_is_served() -> None:
     assert response.status_code == 200
     assert "var htmx" in response.text
     assert len(response.text) > 10_000
+
+
+def test_icon_assets_are_served() -> None:
+    favicon = client.get("/static/icons/favicon.svg")
+    app_icon = client.get("/static/icons/app-icon.svg")
+    manifest = client.get("/static/manifest.webmanifest")
+
+    assert favicon.status_code == 200
+    assert "<svg" in favicon.text
+    assert "#1B7F4A" in favicon.text
+    assert app_icon.status_code == 200
+    assert "viewBox=\"0 0 256 256\"" in app_icon.text
+    assert manifest.status_code == 200
+    assert "/static/icons/app-icon.svg" in manifest.text
 
 
 def test_save_settings_route(monkeypatch, tmp_path) -> None:
