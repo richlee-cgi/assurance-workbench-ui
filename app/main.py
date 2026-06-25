@@ -23,7 +23,7 @@ from app.evidence import (
     shell_command,
 )
 from app.jobs import cancel_job, get_job, start_evidence_pack_job
-from app.settings import load_settings, save_settings, settings_from_form
+from app.settings import load_settings, save_settings, settings_from_form, settings_path
 
 BASE_DIR = Path(__file__).resolve().parent
 
@@ -59,6 +59,7 @@ def settings(request: Request) -> HTMLResponse:
             "active_nav": "settings",
             "title": "Settings",
             "settings": current_settings,
+            "settings_path": settings_path().resolve(),
         },
     )
 

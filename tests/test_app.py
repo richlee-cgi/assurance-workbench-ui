@@ -23,7 +23,10 @@ def test_home_page() -> None:
     assert "Discover repos" in response.text
 
 
-def test_settings_page() -> None:
+def test_settings_page(monkeypatch, tmp_path) -> None:
+    settings_file = tmp_path / "settings.json"
+    monkeypatch.setenv(SETTINGS_PATH_ENV, str(settings_file))
+
     response = client.get("/settings")
 
     assert response.status_code == 200
@@ -34,6 +37,7 @@ def test_settings_page() -> None:
     assert "id=\"cli-check-spinner\"" in response.text
     assert "data-cli-check-button" in response.text
     assert "htmx:beforeRequest" in response.text
+    assert str(settings_file) in response.text
 
 
 def test_health() -> None:
