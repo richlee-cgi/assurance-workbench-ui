@@ -2,7 +2,7 @@
 
 Local HTMX web UI wrapper for `assurance-cli`.
 
-The CLI remains the evidence engine. This app is a local browser interface for configuring evidence runs, previewing commands, and eventually saving results into a Workbench evidence folder.
+The CLI remains the evidence engine. This app is a local browser interface for configuring evidence runs, previewing commands, saving results into a Workbench evidence folder, and inspecting completed evidence packs.
 
 ## Install
 
@@ -38,13 +38,15 @@ Implemented first slice:
 - Azure and Dataverse CLI health checks through `assurance-cli`.
 - Evidence-pack form with HTMX command preview.
 - Evidence-pack execution with timestamped run folders.
+- Results list for saved evidence runs.
+- Result detail view with run metadata, source coverage, command, rendered evidence, warnings and logs.
 - Health endpoint.
 - Route tests.
 
 Not implemented yet:
 
 - Streaming long-running command progress.
-- Results viewer.
+- Cancellation for long-running evidence commands.
 - Deterministic analysis.
 
 ## Settings

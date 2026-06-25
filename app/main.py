@@ -8,7 +8,14 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
 from app.cli import check_assurance_cli, check_azure, check_dataverse
-from app.evidence import build_evidence_command, evidence_form_from_data, run_evidence_pack, shell_command
+from app.evidence import (
+    build_evidence_command,
+    evidence_form_from_data,
+    list_evidence_runs,
+    load_evidence_run,
+    run_evidence_pack,
+    shell_command,
+)
 from app.settings import load_settings, save_settings, settings_from_form
 
 BASE_DIR = Path(__file__).resolve().parent
@@ -132,6 +139,38 @@ async def run_evidence_pack_route(request: Request) -> HTMLResponse:
             "result": result,
             "shell_command": shell_command(result.command),
         },
+    )
+
+
+@app.get("/runs", response_class=HTMLResponse)
+def runs(request: Request) -> HTMLResponse:
+    current_settings = load_settings()
+    return templates.TemplateResponse(
+        request,
+        "runs.html",
+        {
+            "active_nav": "runs",
+            "title": "Runs",
+            "runs": list_evidence_runs(current_settings),
+            "settings": current_settings,
+        },
+    )
+
+
+@app.get("/runs/{run_id}", response_class=HTMLResponse)
+def run_detail(request: Request, run_id: str) -> HTMLResponse:
+    current_settings = load_settings()
+    detail = load_evidence_run(current_settings, run_id)
+    return templates.TemplateResponse(
+        request,
+        "run_detail.html",
+        {
+            "active_nav": "runs",
+            "title": "Run Detail",
+            "detail": detail,
+            "run_id": run_id,
+        },
+        status_code=200 if detail else 404,
     )
 
 

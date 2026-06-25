@@ -5,6 +5,7 @@ import shlex
 import subprocess
 from dataclasses import asdict, dataclass
 from datetime import datetime
+from html import escape
 from pathlib import Path
 from typing import Any
 
@@ -38,6 +39,30 @@ class EvidenceRunResult:
     stderr: str
     evidence_path: Path
     timed_out: bool = False
+
+
+@dataclass(frozen=True)
+class EvidenceRunSummary:
+    id: str
+    run_dir: Path
+    topic: str
+    preset: str
+    sources: tuple[str, ...]
+    exit_code: int | None
+    command: str
+    evidence_path: Path
+    has_evidence: bool
+
+
+@dataclass(frozen=True)
+class EvidenceRunDetail:
+    summary: EvidenceRunSummary
+    request: dict[str, Any]
+    stdout: str
+    stderr: str
+    evidence_markdown: str
+    evidence_html: str
+    warnings: tuple[str, ...]
 
 
 def evidence_form_from_data(data: Any, defaults: AppSettings | None = None) -> EvidenceForm:
@@ -149,6 +174,105 @@ def run_evidence_pack(
     )
 
 
+def evidence_runs_root(settings: AppSettings) -> Path:
+    root = Path(settings.workbench_root).expanduser() if settings.workbench_root else Path("runs")
+    return root / "runs"
+
+
+def list_evidence_runs(settings: AppSettings) -> list[EvidenceRunSummary]:
+    runs_root = evidence_runs_root(settings)
+    if not runs_root.exists():
+        return []
+    summaries = []
+    for run_dir in runs_root.iterdir():
+        if run_dir.is_dir():
+            summaries.append(_run_summary(run_dir))
+    return sorted(summaries, key=lambda item: item.id, reverse=True)
+
+
+def load_evidence_run(settings: AppSettings, run_id: str) -> EvidenceRunDetail | None:
+    if "/" in run_id or "\\" in run_id or run_id in {"", ".", ".."}:
+        return None
+    run_dir = evidence_runs_root(settings) / run_id
+    if not run_dir.is_dir():
+        return None
+    summary = _run_summary(run_dir)
+    request = _read_json(run_dir / "request.json")
+    stdout = _read_text(run_dir / "stdout.log")
+    stderr = _read_text(run_dir / "stderr.log")
+    evidence_markdown = _read_text(summary.evidence_path)
+    return EvidenceRunDetail(
+        summary=summary,
+        request=request,
+        stdout=stdout,
+        stderr=stderr,
+        evidence_markdown=evidence_markdown,
+        evidence_html=render_markdown(evidence_markdown),
+        warnings=_extract_warnings(evidence_markdown, stderr),
+    )
+
+
+def render_markdown(markdown: str) -> str:
+    lines = markdown.splitlines()
+    html: list[str] = []
+    paragraph: list[str] = []
+    in_code = False
+    code_lines: list[str] = []
+    in_list = False
+
+    def flush_paragraph() -> None:
+        if paragraph:
+            html.append(f"<p>{escape(' '.join(paragraph))}</p>")
+            paragraph.clear()
+
+    def close_list() -> None:
+        nonlocal in_list
+        if in_list:
+            html.append("</ul>")
+            in_list = False
+
+    for line in lines:
+        stripped = line.strip()
+        if stripped.startswith("```"):
+            flush_paragraph()
+            close_list()
+            if in_code:
+                html.append(f"<pre><code>{escape(chr(10).join(code_lines))}</code></pre>")
+                code_lines.clear()
+                in_code = False
+            else:
+                in_code = True
+            continue
+        if in_code:
+            code_lines.append(line)
+            continue
+        if not stripped:
+            flush_paragraph()
+            close_list()
+            continue
+        if stripped.startswith("#"):
+            flush_paragraph()
+            close_list()
+            level = min(len(stripped) - len(stripped.lstrip("#")), 4)
+            text = stripped[level:].strip()
+            html.append(f"<h{level}>{escape(text)}</h{level}>")
+            continue
+        if stripped.startswith("- ") or stripped.startswith("* "):
+            flush_paragraph()
+            if not in_list:
+                html.append("<ul>")
+                in_list = True
+            html.append(f"<li>{escape(stripped[2:].strip())}</li>")
+            continue
+        paragraph.append(stripped)
+
+    if in_code:
+        html.append(f"<pre><code>{escape(chr(10).join(code_lines))}</code></pre>")
+    flush_paragraph()
+    close_list()
+    return "\n".join(html)
+
+
 def shell_command(command: list[str]) -> str:
     return " ".join(shlex.quote(part) for part in command)
 
@@ -178,3 +302,60 @@ def _slug(value: str) -> str:
             chars.append("-")
     slug = "".join(chars).strip("-")
     return slug[:60] or "evidence-pack"
+
+
+def _run_summary(run_dir: Path) -> EvidenceRunSummary:
+    request = _read_json(run_dir / "request.json")
+    evidence_path = run_dir / "evidence-pack.md"
+    return EvidenceRunSummary(
+        id=run_dir.name,
+        run_dir=run_dir,
+        topic=str(request.get("topic", "")),
+        preset=str(request.get("preset", "")),
+        sources=tuple(str(source) for source in request.get("sources", ())),
+        exit_code=_read_exit_code(run_dir / "exit-code.txt"),
+        command=_read_text(run_dir / "command.txt").strip(),
+        evidence_path=evidence_path,
+        has_evidence=evidence_path.exists(),
+    )
+
+
+def _read_json(path: Path) -> dict[str, Any]:
+    if not path.exists():
+        return {}
+    try:
+        with path.open("r", encoding="utf-8") as handle:
+            data = json.load(handle)
+    except (OSError, json.JSONDecodeError):
+        return {}
+    return data if isinstance(data, dict) else {}
+
+
+def _read_text(path: Path) -> str:
+    if not path.exists():
+        return ""
+    try:
+        return path.read_text(encoding="utf-8")
+    except OSError:
+        return ""
+
+
+def _read_exit_code(path: Path) -> int | None:
+    text = _read_text(path).strip()
+    if not text:
+        return None
+    try:
+        return int(text)
+    except ValueError:
+        return None
+
+
+def _extract_warnings(markdown: str, stderr: str) -> tuple[str, ...]:
+    warnings: list[str] = []
+    for line in (markdown + "\n" + stderr).splitlines():
+        lowered = line.lower()
+        if "warning" in lowered or "warn:" in lowered or "gap" in lowered:
+            stripped = line.strip()
+            if stripped:
+                warnings.append(stripped)
+    return tuple(warnings[:20])

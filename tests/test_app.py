@@ -1,7 +1,7 @@
 from fastapi.testclient import TestClient
 
 from app.cli import CliCheckResult
-from app.evidence import EvidenceRunResult
+from app.evidence import EvidenceRunDetail, EvidenceRunResult, EvidenceRunSummary
 from app.main import app
 from app.settings import SETTINGS_PATH_ENV
 
@@ -139,3 +139,72 @@ def test_run_evidence_pack_route(monkeypatch, tmp_path) -> None:
     assert response.status_code == 200
     assert "Run completed" in response.text
     assert str(evidence_path) in response.text
+    assert f"/runs/{run_dir.name}" in response.text
+
+
+def test_runs_page(monkeypatch, tmp_path) -> None:
+    run_dir = tmp_path / "runs" / "2026-06-25-090000-booking"
+    evidence_path = run_dir / "evidence-pack.md"
+    summary = EvidenceRunSummary(
+        id=run_dir.name,
+        run_dir=run_dir,
+        topic="booking",
+        preset="",
+        sources=("confluence", "jira"),
+        exit_code=0,
+        command="assurance report evidence-pack booking",
+        evidence_path=evidence_path,
+        has_evidence=True,
+    )
+    monkeypatch.setattr("app.main.list_evidence_runs", lambda settings: [summary])
+
+    response = client.get("/runs")
+
+    assert response.status_code == 200
+    assert "Evidence results" in response.text
+    assert "booking" in response.text
+    assert f"/runs/{run_dir.name}" in response.text
+
+
+def test_run_detail_page(monkeypatch, tmp_path) -> None:
+    run_dir = tmp_path / "runs" / "2026-06-25-090000-booking"
+    evidence_path = run_dir / "evidence-pack.md"
+    summary = EvidenceRunSummary(
+        id=run_dir.name,
+        run_dir=run_dir,
+        topic="booking",
+        preset="",
+        sources=("azure",),
+        exit_code=0,
+        command="assurance report evidence-pack booking --include-azure",
+        evidence_path=evidence_path,
+        has_evidence=True,
+    )
+    detail = EvidenceRunDetail(
+        summary=summary,
+        request={"topic": "booking"},
+        stdout="done",
+        stderr="",
+        evidence_markdown="# Evidence",
+        evidence_html="<h1>Evidence</h1>",
+        warnings=("gap: missing Jira context",),
+    )
+    monkeypatch.setattr("app.main.load_evidence_run", lambda settings, run_id: detail)
+
+    response = client.get(f"/runs/{run_dir.name}")
+
+    assert response.status_code == 200
+    assert "Run metadata" in response.text
+    assert "Source coverage" in response.text
+    assert "assurance report evidence-pack booking --include-azure" in response.text
+    assert "<h1>Evidence</h1>" in response.text
+    assert "gap: missing Jira context" in response.text
+
+
+def test_run_detail_page_reports_missing(monkeypatch) -> None:
+    monkeypatch.setattr("app.main.load_evidence_run", lambda settings, run_id: None)
+
+    response = client.get("/runs/missing")
+
+    assert response.status_code == 404
+    assert "Result not found" in response.text

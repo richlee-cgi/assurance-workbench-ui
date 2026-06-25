@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="panel">
+  <div class="section-header">
+    <div>
+      <p class="eyebrow">Phase 5</p>
+      <h2>Evidence results</h2>
+    </div>
+    <span class="status-pill">{{ runs | length }} runs</span>
+  </div>
+
+  {% if runs %}
+    <div class="run-list">
+      {% for run in runs %}
+        <article class="run-row">
+          <div>
+            <h3><a href="/runs/{{ run.id }}">{{ run.topic or run.preset or run.id }}</a></h3>
+            <p>{{ run.id }}</p>
+          </div>
+          <dl class="compact-list">
+            <div>
+              <dt>Status</dt>
+              <dd class="{{ 'ok-text' if run.exit_code == 0 else 'error-text' if run.exit_code else '' }}">
+                {{ 'ok' if run.exit_code == 0 else 'failed' if run.exit_code else 'unknown' }}
+              </dd>
+            </div>
+            <div>
+              <dt>Sources</dt>
+              <dd>{{ run.sources | join(', ') if run.sources else 'none' }}</dd>
+            </div>
+            <div>
+              <dt>Evidence</dt>
+              <dd>{{ 'present' if run.has_evidence else 'missing' }}</dd>
+            </div>
+          </dl>
+        </article>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="empty-state">
+      No evidence runs were found under {{ settings.workbench_root or 'runs' }}.
+    </div>
+  {% endif %}
+</section>
+{% endblock %}

@@ -6,6 +6,9 @@ from app.evidence import (
     build_evidence_command,
     create_run_dir,
     evidence_form_from_data,
+    list_evidence_runs,
+    load_evidence_run,
+    render_markdown,
     run_evidence_pack,
     shell_command,
 )
@@ -109,3 +112,56 @@ def test_run_evidence_pack_records_timeout(tmp_path) -> None:
     assert result.timed_out is True
     assert result.exit_code == 124
     assert (result.run_dir / "stdout.log").read_text(encoding="utf-8") == "partial"
+
+
+def test_list_evidence_runs_reads_saved_metadata(tmp_path) -> None:
+    run_dir = tmp_path / "runs" / "2026-06-25-090000-booking"
+    run_dir.mkdir(parents=True)
+    (run_dir / "request.json").write_text(
+        '{"topic": "booking", "preset": "", "sources": ["confluence", "jira"]}',
+        encoding="utf-8",
+    )
+    (run_dir / "command.txt").write_text("assurance report evidence-pack booking\n", encoding="utf-8")
+    (run_dir / "exit-code.txt").write_text("0\n", encoding="utf-8")
+    (run_dir / "evidence-pack.md").write_text("# Evidence\n", encoding="utf-8")
+
+    runs = list_evidence_runs(AppSettings(workbench_root=str(tmp_path)))
+
+    assert len(runs) == 1
+    assert runs[0].id == "2026-06-25-090000-booking"
+    assert runs[0].topic == "booking"
+    assert runs[0].sources == ("confluence", "jira")
+    assert runs[0].exit_code == 0
+    assert runs[0].has_evidence is True
+
+
+def test_load_evidence_run_renders_markdown_and_warnings(tmp_path) -> None:
+    run_dir = tmp_path / "runs" / "2026-06-25-090000-booking"
+    run_dir.mkdir(parents=True)
+    (run_dir / "request.json").write_text('{"topic": "booking", "sources": ["azure"]}', encoding="utf-8")
+    (run_dir / "command.txt").write_text("assurance report evidence-pack booking\n", encoding="utf-8")
+    (run_dir / "exit-code.txt").write_text("1\n", encoding="utf-8")
+    (run_dir / "stderr.log").write_text("warning: partial data\n", encoding="utf-8")
+    (run_dir / "stdout.log").write_text("started\n", encoding="utf-8")
+    (run_dir / "evidence-pack.md").write_text("# Evidence\n\n- gap: missing Jira context\n", encoding="utf-8")
+
+    detail = load_evidence_run(AppSettings(workbench_root=str(tmp_path)), "2026-06-25-090000-booking")
+
+    assert detail is not None
+    assert "<h1>Evidence</h1>" in detail.evidence_html
+    assert "<li>gap: missing Jira context</li>" in detail.evidence_html
+    assert detail.warnings == ("- gap: missing Jira context", "warning: partial data")
+    assert detail.stdout == "started\n"
+
+
+def test_load_evidence_run_rejects_path_traversal(tmp_path) -> None:
+    detail = load_evidence_run(AppSettings(workbench_root=str(tmp_path)), "../secret")
+
+    assert detail is None
+
+
+def test_render_markdown_escapes_html() -> None:
+    html = render_markdown("# <script>alert(1)</script>")
+
+    assert "<script>" not in html
+    assert "&lt;script&gt;alert(1)&lt;/script&gt;" in html

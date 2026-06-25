@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+
+{% block content %}
+{% if detail %}
+<section class="panel">
+  <div class="section-header">
+    <div>
+      <p class="eyebrow">Evidence run</p>
+      <h2>{{ detail.summary.topic or detail.summary.preset or detail.summary.id }}</h2>
+    </div>
+    <span class="status-pill {{ 'success-pill' if detail.summary.exit_code == 0 else 'error-pill' if detail.summary.exit_code else '' }}">
+      {{ 'ok' if detail.summary.exit_code == 0 else 'failed' if detail.summary.exit_code else 'unknown' }}
+    </span>
+  </div>
+
+  <div class="metadata-grid">
+    <section>
+      <h3>Run metadata</h3>
+      <dl class="result-list">
+        <div>
+          <dt>Run folder</dt>
+          <dd>{{ detail.summary.run_dir }}</dd>
+        </div>
+        <div>
+          <dt>Evidence file</dt>
+          <dd>{{ detail.summary.evidence_path }}</dd>
+        </div>
+        <div>
+          <dt>Preset</dt>
+          <dd>{{ detail.summary.preset or 'none' }}</dd>
+        </div>
+        <div>
+          <dt>Sources</dt>
+          <dd>{{ detail.summary.sources | join(', ') if detail.summary.sources else 'none' }}</dd>
+        </div>
+      </dl>
+    </section>
+
+    <section>
+      <h3>Source coverage</h3>
+      <ul class="coverage-list">
+        {% for source in ["confluence", "jira", "azure", "dataverse"] %}
+          <li class="{{ 'covered' if source in detail.summary.sources else 'skipped' }}">
+            <span>{{ source }}</span>
+            <strong>{{ 'included' if source in detail.summary.sources else 'skipped' }}</strong>
+          </li>
+        {% endfor %}
+      </ul>
+    </section>
+  </div>
+
+  <section class="result-section">
+    <h3>Command</h3>
+    <pre class="command-preview">{{ detail.summary.command or 'No command recorded.' }}</pre>
+  </section>
+
+  {% if detail.warnings %}
+    <section class="result-section">
+      <h3>Gaps and warnings</h3>
+      <ul>
+        {% for warning in detail.warnings %}
+          <li>{{ warning }}</li>
+        {% endfor %}
+      </ul>
+    </section>
+  {% endif %}
+
+  <section class="result-section">
+    <h3>Evidence pack</h3>
+    {% if detail.evidence_html %}
+      <article class="markdown-body">{{ detail.evidence_html | safe }}</article>
+    {% else %}
+      <div class="empty-state">No evidence-pack.md file was found for this run.</div>
+    {% endif %}
+  </section>
+
+  <section class="result-section">
+    <h3>Logs</h3>
+    <details>
+      <summary>stdout.log</summary>
+      <pre>{{ detail.stdout or 'No stdout captured.' }}</pre>
+    </details>
+    <details>
+      <summary>stderr.log</summary>
+      <pre>{{ detail.stderr or 'No stderr captured.' }}</pre>
+    </details>
+  </section>
+</section>
+{% else %}
+<section class="panel">
+  <div class="section-header">
+    <div>
+      <p class="eyebrow">Missing run</p>
+      <h2>Result not found</h2>
+    </div>
+  </div>
+  <p>No saved evidence run was found for {{ run_id }}.</p>
+  <a class="button-link" href="/runs">Back to results</a>
+</section>
+{% endif %}
+{% endblock %}
