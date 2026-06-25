@@ -66,6 +66,16 @@ Stored values:
 
 The UI does not store API tokens or credentials.
 
+## Evidence Form Options
+
+`Code repositories` enables local Git repository evidence. The UI passes selected repo roots and repo names to `assurance report evidence-pack --include-code`, so the CLI can search local files, recent commits and repository metadata.
+
+`GitHub fallback` is only useful with code or PR evidence. It allows the CLI to use the GitHub CLI (`gh`) for read-only PR lookup when a Jira-linked PR or other GitHub detail cannot be resolved from local repositories alone. It depends on local `gh` authentication.
+
+`Refresh cache` tells `assurance-cli` to bypass existing Atlassian cache entries for this run and update the cache with fresh responses.
+
+`No cache` disables cache reads and writes for this run. Use it for one-off live retrievals or when cached evidence may be misleading.
+
 ## HTMX Asset Strategy
 
 The template references `/static/vendor/htmx.min.js` so the app can work offline on corporate machines.
