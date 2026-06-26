@@ -11,53 +11,52 @@
 
   <form id="settings-form" class="grid-form" hx-post="/settings" hx-target="#settings-status" hx-swap="innerHTML">
     <label>
-      Assurance CLI path override
+      <span class="field-title">Assurance CLI path override <span class="info-tooltip" tabindex="0" aria-label="Only set this when developing or testing a separate assurance-cli checkout.">i<span class="tooltip-content" role="tooltip">Only set this when developing or testing a separate assurance-cli checkout.</span></span></span>
       <input type="text" name="assurance_path" value="{{ settings.assurance_path }}" placeholder="Optional: leave blank to use bundled CLI">
-      <span class="field-help">Only set this when developing or testing a separate assurance-cli checkout.</span>
     </label>
 
     <label>
-      Workbench evidence root
+      <span class="field-title">Workbench evidence root <span class="info-tooltip" tabindex="0" aria-label="Folder where timestamped evidence run folders will be saved.">i<span class="tooltip-content" role="tooltip">Folder where timestamped evidence run folders will be saved.</span></span></span>
       <input type="text" name="workbench_root" value="{{ settings.workbench_root }}" placeholder="/path/to/Workbench/30 Workbenches/.../02-Evidence">
     </label>
 
     <label>
-      Default Confluence space
+      <span class="field-title">Default Confluence space <span class="info-tooltip" tabindex="0" aria-label="Optional default space key used when Confluence is selected.">i<span class="tooltip-content" role="tooltip">Optional default space key used when Confluence is selected.</span></span></span>
       <input type="text" name="confluence_space" value="{{ settings.confluence_space }}" placeholder="SPACE">
     </label>
 
     <label>
-      Default Jira project
+      <span class="field-title">Default Jira project <span class="info-tooltip" tabindex="0" aria-label="Optional default Jira project key used when Jira is selected.">i<span class="tooltip-content" role="tooltip">Optional default Jira project key used when Jira is selected.</span></span></span>
       <input type="text" name="jira_project" value="{{ settings.jira_project }}" placeholder="PROJ">
     </label>
 
     <label>
-      Default Azure resource group
+      <span class="field-title">Default Azure resource group <span class="info-tooltip" tabindex="0" aria-label="Optional default Azure resource group used to keep Azure searches focused.">i<span class="tooltip-content" role="tooltip">Optional default Azure resource group used to keep Azure searches focused.</span></span></span>
       <input type="text" name="azure_resource_group" value="{{ settings.azure_resource_group }}" placeholder="rg-example-dev">
     </label>
 
     <label>
-      Default repo roots
+      <span class="field-title">Default repo roots <span class="info-tooltip" tabindex="0" aria-label="One or more local folders that contain checked-out Git repositories.">i<span class="tooltip-content" role="tooltip">One or more local folders that contain checked-out Git repositories.</span></span></span>
       <textarea name="repo_roots" placeholder="/Users/example/dev">{{ settings.repo_roots }}</textarea>
     </label>
 
     <label>
-      Default repos
+      <span class="field-title">Default repos <span class="info-tooltip" tabindex="0" aria-label="Optional newline-separated repository names or paths to include by default.">i<span class="tooltip-content" role="tooltip">Optional newline-separated repository names or paths to include by default.</span></span></span>
       <textarea name="repos" placeholder="service-a&#10;service-b">{{ settings.repos }}</textarea>
     </label>
 
     <label>
-      Exclude Confluence from parent
+      <span class="field-title">Exclude Confluence from parent <span class="info-tooltip" tabindex="0" aria-label="Exclude pages under these Confluence parent page IDs or URLs.">i<span class="tooltip-content" role="tooltip">Exclude pages under these Confluence parent page IDs or URLs.</span></span></span>
       <textarea name="exclude_confluence_parents" placeholder="983238177&#10;https://example.atlassian.net/wiki/spaces/SPACE/pages/983238177/Assurance">{{ settings.exclude_confluence_parents }}</textarea>
     </label>
 
     <label>
-      Jira team field
+      <span class="field-title">Jira team field <span class="info-tooltip" tabindex="0" aria-label="Jira field used for team exclusions, usually Team or a customfield ID.">i<span class="tooltip-content" role="tooltip">Jira field used for team exclusions, usually Team or a customfield ID.</span></span></span>
       <input type="text" name="jira_team_field" value="{{ settings.jira_team_field }}" placeholder="Team or customfield_12345">
     </label>
 
     <label>
-      Exclude Jira from Team
+      <span class="field-title">Exclude Jira from Team <span class="info-tooltip" tabindex="0" aria-label="Exact Jira team names to exclude from evidence results.">i<span class="tooltip-content" role="tooltip">Exact Jira team names to exclude from evidence results.</span></span></span>
       <textarea name="exclude_jira_teams" placeholder="DSP Assurance">{{ settings.exclude_jira_teams }}</textarea>
     </label>
 

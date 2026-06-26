@@ -36,6 +36,7 @@ def test_settings_page(monkeypatch, tmp_path) -> None:
     assert response.status_code == 200
     assert "Assurance CLI path override" in response.text
     assert "Only set this when developing or testing a separate assurance-cli checkout" in response.text
+    assert response.text.count("class=\"info-tooltip\"") == 10
     assert "Workbench evidence root" in response.text
     assert "Default repo roots" in response.text
     assert "Exclude Confluence from parent" in response.text
