@@ -76,6 +76,9 @@
       <button type="button" hx-post="/runs/{{ detail.summary.id }}/rerun" hx-target="#rerun-result" hx-swap="innerHTML">
         Re-run
       </button>
+      <form class="inline-form" method="post" action="/runs/{{ detail.summary.id }}/delete" onsubmit="return confirm('Delete evidence run {{ detail.summary.id }}? This removes the saved run folder.');">
+        <button class="danger-button" type="submit">Delete run</button>
+      </form>
     </div>
     <div id="file-action-result" class="fragment-slot" aria-live="polite"></div>
     <div id="rerun-result" class="fragment-slot" aria-live="polite"></div>

@@ -8,6 +8,7 @@ from app.evidence import (
     build_evidence_command,
     build_run_command,
     create_run_dir,
+    delete_evidence_run,
     evidence_form_from_data,
     filter_evidence_runs,
     form_from_saved_request,
@@ -320,6 +321,27 @@ def test_run_file_path_allows_analysis_artifacts(tmp_path) -> None:
 
     assert run_file_path(settings, run_dir.name, "assurance-checks.md") == checks
     assert run_file_path(settings, run_dir.name, "analyst-brief.md") == brief
+
+
+def test_delete_evidence_run_removes_run_folder(tmp_path) -> None:
+    run_dir = tmp_path / "runs" / "2026-06-25-090000-booking"
+    run_dir.mkdir(parents=True)
+    (run_dir / "request.json").write_text('{"topic": "booking"}', encoding="utf-8")
+
+    result = delete_evidence_run(AppSettings(workbench_root=str(tmp_path)), run_dir.name)
+
+    assert result.ok is True
+    assert not run_dir.exists()
+
+
+def test_delete_evidence_run_rejects_path_traversal(tmp_path) -> None:
+    outside = tmp_path / "outside"
+    outside.mkdir()
+
+    result = delete_evidence_run(AppSettings(workbench_root=str(tmp_path)), "../outside")
+
+    assert result.ok is False
+    assert outside.exists()
 
 
 def test_analysis_artifacts_include_absence_checks(tmp_path) -> None:

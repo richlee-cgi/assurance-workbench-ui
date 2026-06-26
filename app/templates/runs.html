@@ -9,6 +9,12 @@
     <span class="status-pill">{{ runs | length }} of {{ total_runs }} runs</span>
   </div>
 
+  {% if deleted %}
+    <div class="notice success-notice">Evidence run deleted.</div>
+  {% elif delete_failed %}
+    <div class="notice error-notice">Evidence run could not be deleted.</div>
+  {% endif %}
+
   <form class="filter-form" method="get" action="/runs">
     <label>
       Topic

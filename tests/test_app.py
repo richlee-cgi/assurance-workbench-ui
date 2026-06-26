@@ -4,7 +4,7 @@ from app.cli import CliCheckResult, CodeRepoDiscoveryResult
 from app.evidence import EvidenceRunDetail, EvidenceRunResult, EvidenceRunSummary, FileActionResult, GapWarningItem
 from app.jobs import EvidenceJob
 from app.main import app
-from app.settings import SETTINGS_PATH_ENV
+from app.settings import AppSettings, SETTINGS_PATH_ENV, save_settings
 
 
 client = TestClient(app)
@@ -405,6 +405,7 @@ def test_run_detail_page(monkeypatch, tmp_path) -> None:
     assert "Source coverage" in response.text
     assert "Saved files" in response.text
     assert "Re-run" in response.text
+    assert "Delete run" in response.text
     assert f"/runs/{run_dir.name}/files/evidence-pack.md" in response.text
     assert f"/runs/{run_dir.name}/files/gaps-and-warnings.md" in response.text
     assert f"/runs/{run_dir.name}/files/gaps-and-warnings.json" in response.text
@@ -517,3 +518,18 @@ def test_rerun_route(monkeypatch, tmp_path) -> None:
     assert response.status_code == 200
     assert "Run in progress" in response.text
     assert captured["sources"] == ()
+
+
+def test_delete_run_route_removes_folder(monkeypatch, tmp_path) -> None:
+    settings_file = tmp_path / "settings.json"
+    monkeypatch.setenv(SETTINGS_PATH_ENV, str(settings_file))
+    save_settings(AppSettings(workbench_root=str(tmp_path)), settings_file)
+    run_dir = tmp_path / "runs" / "2026-06-25-090000-booking"
+    run_dir.mkdir(parents=True)
+    (run_dir / "request.json").write_text('{"topic": "booking"}', encoding="utf-8")
+
+    response = client.post(f"/runs/{run_dir.name}/delete", follow_redirects=False)
+
+    assert response.status_code == 303
+    assert response.headers["location"] == "/runs?deleted=1"
+    assert not run_dir.exists()

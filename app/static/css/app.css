@@ -305,6 +305,18 @@ fieldset input {
   color: #7a4b00;
 }
 
+.success-notice {
+  border-color: #abefc6;
+  background: #ecfdf3;
+  color: #05603a;
+}
+
+.error-notice {
+  border-color: #fecdca;
+  background: #fef3f2;
+  color: #b42318;
+}
+
 .form-actions {
   display: flex;
   align-items: center;
@@ -368,8 +380,18 @@ fieldset input {
 .file-actions {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   gap: 8px;
   margin-top: 10px;
+}
+
+.inline-form {
+  display: inline-flex;
+}
+
+.danger-button {
+  border-color: #d92d20;
+  background: #d92d20;
 }
 
 .inline-result {

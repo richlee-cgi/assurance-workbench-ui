@@ -3,13 +3,14 @@ from __future__ import annotations
 from pathlib import Path
 
 from fastapi import FastAPI, Request
-from fastapi.responses import HTMLResponse, PlainTextResponse
+from fastapi.responses import HTMLResponse, PlainTextResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
 from app.cli import check_assurance_cli, check_azure, check_dataverse, discover_code_repos
 from app.evidence import (
     build_evidence_command,
+    delete_evidence_run,
     evidence_form_from_data,
     filter_evidence_runs,
     form_from_saved_request,
@@ -203,6 +204,8 @@ def runs(request: Request) -> HTMLResponse:
     topic = request.query_params.get("topic", "")
     preset = request.query_params.get("preset", "")
     source = request.query_params.get("source", "")
+    deleted = request.query_params.get("deleted") == "1"
+    delete_failed = request.query_params.get("delete_failed") == "1"
     all_runs = list_evidence_runs(current_settings)
     return templates.TemplateResponse(
         request,
@@ -214,6 +217,8 @@ def runs(request: Request) -> HTMLResponse:
             "total_runs": len(all_runs),
             "filters": {"topic": topic, "preset": preset, "source": source},
             "settings": current_settings,
+            "deleted": deleted,
+            "delete_failed": delete_failed,
         },
     )
 
@@ -256,6 +261,13 @@ def rerun(request: Request, run_id: str) -> HTMLResponse:
             "shell_command": shell_command(job.command),
         },
     )
+
+
+@app.post("/runs/{run_id}/delete")
+def delete_run(run_id: str) -> RedirectResponse:
+    result = delete_evidence_run(load_settings(), run_id)
+    suffix = "deleted=1" if result.ok else "delete_failed=1"
+    return RedirectResponse(f"/runs?{suffix}", status_code=303)
 
 
 @app.get("/jobs/{job_id}", response_class=HTMLResponse)

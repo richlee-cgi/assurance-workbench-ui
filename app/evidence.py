@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 import shutil
 import shlex
 import subprocess
@@ -329,6 +330,23 @@ def run_file_path(settings: AppSettings, run_id: str, filename: str) -> Path | N
         return None
     path = evidence_runs_root(settings) / run_id / filename
     return path if path.exists() and path.is_file() else None
+
+
+def delete_evidence_run(settings: AppSettings, run_id: str) -> FileActionResult:
+    if "/" in run_id or "\\" in run_id or run_id in {"", ".", ".."}:
+        return FileActionResult(False, "Run not found.", [])
+    runs_root = evidence_runs_root(settings).resolve()
+    run_dir = (runs_root / run_id).resolve()
+    try:
+        common = os.path.commonpath([str(runs_root), str(run_dir)])
+    except ValueError:
+        return FileActionResult(False, "Run path is outside the configured runs folder.", [])
+    if common != str(runs_root):
+        return FileActionResult(False, "Run path is outside the configured runs folder.", [])
+    if not run_dir.exists() or not run_dir.is_dir():
+        return FileActionResult(False, "Run not found.", [])
+    shutil.rmtree(run_dir)
+    return FileActionResult(True, "Deleted evidence run.", ["delete", str(run_dir)])
 
 
 def write_gaps_and_warnings(run_dir: Path, *, evidence_markdown: str | None = None, stderr: str | None = None) -> tuple[str, ...]:
