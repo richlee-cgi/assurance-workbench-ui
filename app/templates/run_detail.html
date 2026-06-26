@@ -92,25 +92,6 @@
     <div id="rerun-result" class="fragment-slot" aria-live="polite"></div>
   </section>
 
-  {% if detail.warning_items %}
-    <section class="result-section">
-      <h3>Gaps and warnings</h3>
-      <ul>
-        {% for warning in detail.warning_items %}
-          <li>
-            <strong>{{ warning.kind | title }}:</strong> {{ warning.text }}
-            <dl class="compact-metadata">
-              <dt>Source</dt>
-              <dd>{{ warning.locations | join('; ') }}</dd>
-              <dt>Criteria</dt>
-              <dd>{{ warning.criteria | join(', ') }}</dd>
-            </dl>
-          </li>
-        {% endfor %}
-      </ul>
-    </section>
-  {% endif %}
-
   <section class="result-section">
     <div class="section-header compact-header">
       <div>

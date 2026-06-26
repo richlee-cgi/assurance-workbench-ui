@@ -414,6 +414,7 @@ def test_run_detail_page(monkeypatch, tmp_path) -> None:
     assert "Saved files" in response.text
     assert "Evidence size" in response.text
     assert "42 lines / 2,048 chars" in response.text
+    assert "1 gaps/warnings" in response.text
     assert "Re-run" in response.text
     assert "Delete run" in response.text
     assert f"/runs/{run_dir.name}/files/evidence-pack.md" in response.text
@@ -426,9 +427,8 @@ def test_run_detail_page(monkeypatch, tmp_path) -> None:
     assert "Open full evidence pack" not in response.text
     assert "Preview is truncated" in response.text
     assert "<h1>Evidence</h1>" in response.text
-    assert "gap: missing Jira context" in response.text
-    assert "contains &#34;gap&#34;" in response.text
-    assert "jira: DSP-123" in response.text
+    assert "contains &#34;gap&#34;" not in response.text
+    assert "jira: DSP-123" not in response.text
 
 
 def test_run_detail_page_reports_missing(monkeypatch) -> None:
