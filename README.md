@@ -148,6 +148,45 @@ Then open:
 http://127.0.0.1:8765
 ```
 
+## Updating
+
+Use the update script when you want to pull the latest Workbench and CLI changes. It updates both repos, refreshes the Workbench virtualenv, reinstalls `assurance-cli`, prints installed versions, and asks you to restart the local server.
+
+Mac/Linux:
+
+```bash
+cd ~/dev/assurance-workbench-ui
+./update.sh
+./run.sh
+```
+
+Windows:
+
+```powershell
+cd "$HOME\dev\assurance-workbench-ui"
+.\update.ps1
+.\run.ps1
+```
+
+The script expects `assurance-cli` to be a sibling checkout of `assurance-workbench-ui`, for example:
+
+```text
+~/dev/assurance-cli
+~/dev/assurance-workbench-ui
+```
+
+Override the CLI path when needed:
+
+```bash
+ASSURANCE_CLI_DIR="$HOME/dev/dev-rich/assurance-cli" ./update.sh
+```
+
+```powershell
+.\update.ps1 -CliDir "$HOME\dev\dev-rich\assurance-cli"
+```
+
+The update scripts use `git pull --ff-only` and stop if either repo has local changes. Commit, stash or discard local changes first.
+
 ## Current Scope
 
 Implemented:
