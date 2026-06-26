@@ -274,6 +274,30 @@ def test_form_from_saved_request_preserves_empty_sources() -> None:
     assert form.sources == ()
 
 
+def test_form_from_saved_request_preserves_json_lists() -> None:
+    form = form_from_saved_request(
+        {
+            "topic": "https://github.com/dvsa/dsp-integrations/pull/237",
+            "sources": ["code"],
+            "repo_roots": ["/Users/rich/dev/dev-work/dvsa-dsp"],
+            "repos": ["dsp-integrations"],
+            "exclude_confluence_parents": ["983238177"],
+            "exclude_jira_teams": ["DSP Assurance"],
+            "include_prs": True,
+            "include_diffs": True,
+        }
+    )
+
+    command = build_evidence_command(form)
+
+    assert form.repo_roots == ("/Users/rich/dev/dev-work/dvsa-dsp",)
+    assert form.repos == ("dsp-integrations",)
+    assert "--repo-root" in command
+    assert "['/Users/rich/dev/dev-work/dvsa-dsp']" not in command
+    assert command[command.index("--repo-root") + 1] == "/Users/rich/dev/dev-work/dvsa-dsp"
+    assert command[command.index("--repo") + 1] == "dsp-integrations"
+
+
 def test_load_evidence_run_renders_markdown_and_warnings(tmp_path) -> None:
     run_dir = tmp_path / "runs" / "2026-06-25-090000-booking"
     run_dir.mkdir(parents=True)

@@ -139,11 +139,11 @@ def evidence_form_from_data(data: Any, defaults: AppSettings | None = None) -> E
         confluence_space=str(data.get("confluence_space") or defaults.confluence_space).strip(),
         jira_project=str(data.get("jira_project") or defaults.jira_project).strip(),
         azure_resource_group=str(data.get("azure_resource_group") or defaults.azure_resource_group).strip(),
-        repo_roots=_split_lines_or_commas(str(data.get("repo_roots") or defaults.repo_roots)),
-        repos=_split_lines_or_commas(str(data.get("repos") or defaults.repos)),
-        exclude_confluence_parents=_split_lines_or_commas(str(data.get("exclude_confluence_parents") or defaults.exclude_confluence_parents)),
+        repo_roots=_split_lines_or_commas(data.get("repo_roots") or defaults.repo_roots),
+        repos=_split_lines_or_commas(data.get("repos") or defaults.repos),
+        exclude_confluence_parents=_split_lines_or_commas(data.get("exclude_confluence_parents") or defaults.exclude_confluence_parents),
         jira_team_field=str(data.get("jira_team_field") or defaults.jira_team_field or "Team").strip(),
-        exclude_jira_teams=_split_lines_or_commas(str(data.get("exclude_jira_teams") or defaults.exclude_jira_teams)),
+        exclude_jira_teams=_split_lines_or_commas(data.get("exclude_jira_teams") or defaults.exclude_jira_teams),
         limit=_positive_int(data.get("limit"), default=10),
         include_prs=_as_bool(data.get("include_prs")),
         include_diffs=_as_bool(data.get("include_diffs")),
@@ -573,7 +573,10 @@ def _as_bool(value: Any) -> bool:
     return str(value).lower() in {"1", "true", "yes", "on"}
 
 
-def _split_lines_or_commas(value: str) -> tuple[str, ...]:
+def _split_lines_or_commas(value: Any) -> tuple[str, ...]:
+    if isinstance(value, (list, tuple)):
+        return tuple(str(item).strip() for item in value if str(item).strip())
+    value = str(value)
     normalized = value.replace(",", "\n")
     return tuple(item.strip() for item in normalized.splitlines() if item.strip())
 
