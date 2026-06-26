@@ -11,8 +11,8 @@
 
   <form id="settings-form" class="grid-form" hx-post="/settings" hx-target="#settings-status" hx-swap="innerHTML">
     <label>
-      Assurance executable
-      <input type="text" name="assurance_path" value="{{ settings.assurance_path }}" placeholder="/path/to/assurance-cli/.venv/bin/assurance">
+      Assurance executable override
+      <input type="text" name="assurance_path" value="{{ settings.assurance_path }}" placeholder="Optional: /path/to/assurance or C:\path\to\assurance.exe">
     </label>
 
     <label>
@@ -79,7 +79,7 @@
   <div id="cli-check-result" class="fragment-slot" aria-live="polite"></div>
 
   <div class="notice">
-    Settings are stored in <code>{{ settings_path }}</code>, which is ignored by Git. Do not store credentials in this UI.
+    Settings are stored in <code>{{ settings_path }}</code>, which is ignored by Git. Leave the assurance executable blank to use the bundled CLI dependency. Do not store credentials in this UI.
   </div>
 </section>
 <script>

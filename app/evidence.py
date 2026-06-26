@@ -10,6 +10,7 @@ from html import escape
 from pathlib import Path
 from typing import Any
 
+from app.cli import resolve_assurance_path
 from app.settings import AppSettings
 
 
@@ -198,7 +199,7 @@ def build_evidence_command(form: EvidenceForm) -> list[str]:
 
 def build_run_command(form: EvidenceForm, *, assurance_path: str, evidence_path: Path) -> list[str]:
     command = build_evidence_command(form)
-    command[0] = assurance_path or command[0]
+    command[0] = resolve_assurance_path(assurance_path) or command[0]
     command.extend(["--out", str(evidence_path)])
     return command
 

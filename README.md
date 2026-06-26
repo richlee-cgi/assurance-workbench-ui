@@ -6,6 +6,29 @@ The CLI remains the evidence engine. This app is a local browser interface for c
 
 The browser-facing name is **Assure-O-Matic 3000 Workbench**.
 
+## New User Start Here
+
+If you want the browser app, clone this repo first. Installing it also installs `assurance-cli` from GitHub as a Python dependency, so the install needs network access to GitHub.
+
+```bash
+git clone https://github.com/richlee-cgi/assurance-workbench-ui.git
+cd assurance-workbench-ui
+python3 -m venv .venv
+. .venv/bin/activate
+python -m pip install -e ".[dev]"
+python -m uvicorn app.main:app --reload --host 127.0.0.1 --port 8765
+```
+
+Then open `http://127.0.0.1:8765`, go to Settings, set your Workbench output folder and source defaults, and run **Check assurance CLI**.
+
+Clone `assurance-cli` separately only if you want to develop the CLI itself or pin the UI to a local CLI checkout. The Settings page still supports an explicit `assurance` executable path as an override.
+
+For local development across both repos, activate the Workbench virtualenv and install the CLI checkout in editable mode:
+
+```bash
+python -m pip install -e ../assurance-cli
+```
+
 ## Install
 
 ```bash
@@ -32,7 +55,7 @@ If PowerShell blocks virtual environment activation, allow locally-created scrip
 Set-ExecutionPolicy -Scope CurrentUser RemoteSigned
 ```
 
-In Workbench Settings, set the Assurance CLI path to the Windows virtualenv executable from the `assurance-cli` repo, for example:
+Workbench can use the `assurance-cli` dependency installed in the same virtualenv. Set the Assurance CLI path only when you want to override that default with a separate CLI checkout, for example:
 
 ```text
 C:\path\to\assurance-cli\.venv\Scripts\assurance.exe
@@ -109,6 +132,8 @@ Stored values:
 - `exclude_jira_teams`
 
 The UI does not store API tokens or credentials.
+
+Leave `assurance_path` blank to use the `assurance-cli` dependency installed with this app. Set it only when you want to use a separate local CLI executable.
 
 ## Evidence Form Options
 

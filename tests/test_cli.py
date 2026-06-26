@@ -1,6 +1,18 @@
 import subprocess
 
-from app.cli import check_assurance_cli, check_azure, check_dataverse, discover_code_repos
+from app.cli import check_assurance_cli, check_azure, check_dataverse, discover_code_repos, resolve_assurance_path
+
+
+def test_resolve_assurance_path_prefers_configured_path(monkeypatch) -> None:
+    monkeypatch.setattr("app.cli._venv_assurance_executable", lambda: "/tmp/from-venv")
+
+    assert resolve_assurance_path("/tmp/configured") == "/tmp/configured"
+
+
+def test_resolve_assurance_path_uses_installed_venv_script(monkeypatch) -> None:
+    monkeypatch.setattr("app.cli._venv_assurance_executable", lambda: "/tmp/from-venv")
+
+    assert resolve_assurance_path("") == "/tmp/from-venv"
 
 
 def test_check_assurance_cli_reports_missing_path() -> None:

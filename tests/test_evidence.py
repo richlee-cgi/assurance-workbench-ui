@@ -6,6 +6,7 @@ from app.evidence import (
     EvidenceForm,
     EvidenceRunSummary,
     build_evidence_command,
+    build_run_command,
     create_run_dir,
     evidence_form_from_data,
     filter_evidence_runs,
@@ -148,6 +149,14 @@ def test_shell_command_quotes_topic() -> None:
     command = shell_command(["assurance", "report", "evidence-pack", "booking allocation"])
 
     assert command == "assurance report evidence-pack 'booking allocation'"
+
+
+def test_build_run_command_uses_resolved_assurance_path(monkeypatch, tmp_path) -> None:
+    monkeypatch.setattr("app.evidence.resolve_assurance_path", lambda configured: "/tmp/from-venv")
+
+    command = build_run_command(EvidenceForm(topic="booking"), assurance_path="", evidence_path=tmp_path / "evidence-pack.md")
+
+    assert command[0] == "/tmp/from-venv"
 
 
 def test_create_run_dir_uses_slug_and_timestamp(tmp_path) -> None:

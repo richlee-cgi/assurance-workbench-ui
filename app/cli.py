@@ -1,9 +1,12 @@
 from __future__ import annotations
 
+import json
+import os
 import shutil
 import subprocess
-import json
+import sys
 from dataclasses import dataclass
+from pathlib import Path
 
 
 @dataclass(frozen=True)
@@ -27,7 +30,17 @@ class CodeRepoDiscoveryResult:
 def resolve_assurance_path(configured_path: str) -> str | None:
     if configured_path:
         return configured_path
-    return shutil.which("assurance")
+    return _venv_assurance_executable() or shutil.which("assurance")
+
+
+def _venv_assurance_executable() -> str | None:
+    scripts_dir = Path(sys.executable).parent
+    names = ("assurance.exe", "assurance") if os.name == "nt" else ("assurance", "assurance.exe")
+    for name in names:
+        candidate = scripts_dir / name
+        if candidate.exists():
+            return str(candidate)
+    return None
 
 
 def check_assurance_cli(configured_path: str) -> CliCheckResult:
