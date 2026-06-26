@@ -200,6 +200,27 @@ def test_run_evidence_pack_writes_metadata_and_logs(tmp_path) -> None:
     assert "Analyst Questions" in (result.run_dir / "analyst-brief.md").read_text(encoding="utf-8")
 
 
+def test_run_evidence_pack_passes_env_file(tmp_path) -> None:
+    env_file = tmp_path / ".env"
+    env_file.write_text("ATLASSIAN_BASE_URL=https://example.atlassian.net\n", encoding="utf-8")
+    captured_env = {}
+
+    def fake_runner(command, **kwargs):
+        captured_env.update(kwargs["env"])
+        out_path = command[command.index("--out") + 1]
+        with open(out_path, "w", encoding="utf-8") as handle:
+            handle.write("# Evidence\n")
+        return subprocess.CompletedProcess(command, 0, stdout="", stderr="")
+
+    run_evidence_pack(
+        EvidenceForm(topic="booking"),
+        AppSettings(assurance_path="/tmp/assurance", workbench_root=str(tmp_path), assurance_env_file=str(env_file)),
+        runner=fake_runner,
+    )
+
+    assert captured_env["ATLASSIAN_BASE_URL"] == "https://example.atlassian.net"
+
+
 def test_run_evidence_pack_records_timeout(tmp_path) -> None:
     def fake_runner(command, **kwargs):
         raise subprocess.TimeoutExpired(command, timeout=1, output="partial", stderr="late")

@@ -51,6 +51,26 @@ def test_start_evidence_pack_job_streams_logs(tmp_path) -> None:
     assert processes[0].command[-2] == "--out"
 
 
+def test_start_evidence_pack_job_passes_env_file(tmp_path) -> None:
+    env_file = tmp_path / ".env"
+    env_file.write_text("ATLASSIAN_BASE_URL=https://example.atlassian.net\n", encoding="utf-8")
+    captured_env = {}
+
+    def fake_popen(command, **kwargs):
+        captured_env.update(kwargs["env"])
+        return FakeProcess(command, stdout=["done\n"], stderr=["warning\n"])
+
+    job = start_evidence_pack_job(
+        EvidenceForm(topic="booking"),
+        AppSettings(assurance_path="/tmp/assurance", workbench_root=str(tmp_path), assurance_env_file=str(env_file)),
+        popen=fake_popen,
+    )
+
+    _wait_for_exit(job)
+
+    assert captured_env["ATLASSIAN_BASE_URL"] == "https://example.atlassian.net"
+
+
 def test_cancel_job_terminates_running_process(tmp_path) -> None:
     process = FakeProcess(["assurance"], exit_code=130)
     job = EvidenceJob(

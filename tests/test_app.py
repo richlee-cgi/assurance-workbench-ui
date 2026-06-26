@@ -39,8 +39,9 @@ def test_settings_page(monkeypatch, tmp_path) -> None:
 
     assert response.status_code == 200
     assert "Assurance CLI path override" in response.text
+    assert "Assurance env file" in response.text
     assert "Only set this when developing or testing a separate assurance-cli checkout" in response.text
-    assert response.text.count("class=\"info-tooltip\"") == 9
+    assert response.text.count("class=\"info-tooltip\"") == 10
     assert "Workbench evidence root" in response.text
     assert "Default repo roots" in response.text
     assert "Exclude Confluence from parent" in response.text
@@ -127,7 +128,7 @@ def test_check_assurance_route_reports_missing_path() -> None:
 def test_check_azure_route(monkeypatch) -> None:
     monkeypatch.setattr(
         "app.main.check_azure",
-        lambda path: CliCheckResult(ok=True, command=[path, "azure", "check"], message="Azure check completed."),
+        lambda path, env_file="": CliCheckResult(ok=True, command=[path, "azure", "check"], message="Azure check completed."),
     )
 
     response = client.post("/settings/check-azure", data={"assurance_path": "/tmp/assurance"})
@@ -139,7 +140,7 @@ def test_check_azure_route(monkeypatch) -> None:
 def test_check_dataverse_route(monkeypatch) -> None:
     monkeypatch.setattr(
         "app.main.check_dataverse",
-        lambda path: CliCheckResult(ok=True, command=[path, "dataverse", "check"], message="Dataverse check completed."),
+        lambda path, env_file="": CliCheckResult(ok=True, command=[path, "dataverse", "check"], message="Dataverse check completed."),
     )
 
     response = client.post("/settings/check-dataverse", data={"assurance_path": "/tmp/assurance"})
@@ -211,7 +212,7 @@ def test_preview_command_route_with_code_source() -> None:
 def test_discover_code_repos_route(monkeypatch) -> None:
     monkeypatch.setattr(
         "app.main.discover_code_repos",
-        lambda path, roots: CodeRepoDiscoveryResult(
+        lambda path, roots, env_file="": CodeRepoDiscoveryResult(
             ok=True,
             command=[path, "code", "repos", "--raw"],
             repositories=[{"name": "booking-service", "path": "/tmp/dev/booking-service", "branch": "main", "dirty": False}],

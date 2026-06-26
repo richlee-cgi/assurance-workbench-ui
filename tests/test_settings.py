@@ -7,6 +7,7 @@ def test_save_and_load_settings(tmp_path: Path) -> None:
     path = tmp_path / "settings.json"
     settings = AppSettings(
         assurance_path="/tmp/assurance",
+        assurance_env_file="/tmp/assurance-cli/.env",
         workbench_root="/tmp/workbench",
         confluence_space="SPACE",
         jira_project="ABC",
@@ -27,6 +28,7 @@ def test_settings_from_form_strips_values() -> None:
     settings = settings_from_form(
         {
             "assurance_path": " /tmp/assurance ",
+            "assurance_env_file": " /tmp/assurance-cli/.env ",
             "workbench_root": " /tmp/workbench ",
             "confluence_space": " SPACE ",
             "jira_project": " ABC ",
@@ -40,6 +42,7 @@ def test_settings_from_form_strips_values() -> None:
     )
 
     assert settings.assurance_path == "/tmp/assurance"
+    assert settings.assurance_env_file == "/tmp/assurance-cli/.env"
     assert settings.workbench_root == "/tmp/workbench"
     assert settings.confluence_space == "SPACE"
     assert settings.jira_project == "ABC"

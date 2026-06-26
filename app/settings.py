@@ -14,6 +14,7 @@ DEFAULT_SETTINGS_PATH = Path(".assurance-workbench-ui.json")
 @dataclass(frozen=True)
 class AppSettings:
     assurance_path: str = ""
+    assurance_env_file: str = ""
     workbench_root: str = ""
     confluence_space: str = ""
     jira_project: str = ""
@@ -47,6 +48,7 @@ def save_settings(settings: AppSettings, path: Path | None = None) -> None:
 def settings_from_form(data: Any) -> AppSettings:
     return AppSettings(
         assurance_path=str(data.get("assurance_path", "")).strip(),
+        assurance_env_file=str(data.get("assurance_env_file", "")).strip(),
         workbench_root=str(data.get("workbench_root", "")).strip(),
         confluence_space=str(data.get("confluence_space", "")).strip(),
         jira_project=str(data.get("jira_project", "")).strip(),

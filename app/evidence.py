@@ -12,6 +12,7 @@ from pathlib import Path
 from typing import Any
 
 from app.cli import resolve_assurance_path
+from app.env import subprocess_env
 from app.settings import AppSettings
 
 
@@ -238,7 +239,7 @@ def run_evidence_pack(
     (run_dir / "request.json").write_text(json.dumps(asdict(form), indent=2, sort_keys=True), encoding="utf-8")
     (run_dir / "command.txt").write_text(shell_command(command) + "\n", encoding="utf-8")
     try:
-        completed = runner(command, capture_output=True, text=True, check=False, timeout=timeout)
+        completed = runner(command, capture_output=True, text=True, check=False, timeout=timeout, env=subprocess_env(settings.assurance_env_file))
         stdout = completed.stdout or ""
         stderr = completed.stderr or ""
         exit_code = int(completed.returncode)

@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import Callable
 
 from app.evidence import EvidenceForm, build_run_command, create_run_dir, shell_command, write_gaps_and_warnings
+from app.env import subprocess_env
 from app.settings import AppSettings
 
 
@@ -51,7 +52,7 @@ def start_evidence_pack_job(
     (run_dir / "request.json").write_text(json.dumps(asdict(form), indent=2, sort_keys=True), encoding="utf-8")
     (run_dir / "command.txt").write_text(shell_command(command) + "\n", encoding="utf-8")
     job = EvidenceJob(id=uuid.uuid4().hex, run_dir=run_dir, command=command, evidence_path=evidence_path)
-    process = popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+    process = popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, env=subprocess_env(settings.assurance_env_file))
     job.process = process
     with JOBS_LOCK:
         JOBS[job.id] = job
