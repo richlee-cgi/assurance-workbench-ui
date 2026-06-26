@@ -15,12 +15,12 @@
     <input type="hidden" name="exclude_jira_teams" value="{{ settings.exclude_jira_teams }}">
 
     <label>
-      Topic
+      <span class="field-title">Topic <span class="info-tooltip" tabindex="0" aria-label="Main search text. The words are passed together as one topic phrase; each source applies its own matching, including plural handling where supported.">i<span class="tooltip-content" role="tooltip">Main search text. The words are passed together as one topic phrase; each source applies its own matching, including plural handling where supported.</span></span></span>
       <input type="text" name="topic" placeholder="booking allocation">
     </label>
 
     <label>
-      Preset
+      <span class="field-title">Preset <span class="info-tooltip" tabindex="0" aria-label="Optional assurance lens that adjusts the default topic shape and included evidence sources.">i<span class="tooltip-content" role="tooltip">Optional assurance lens that adjusts the default topic shape and included evidence sources.</span></span></span>
       <select name="preset">
         <option value="">None</option>
         <option value="architecture">Architecture</option>
@@ -33,37 +33,37 @@
     </label>
 
     <label>
-      Confluence space
+      <span class="field-title">Confluence space <span class="info-tooltip" tabindex="0" aria-label="Optional Confluence space key used to keep Confluence searches focused.">i<span class="tooltip-content" role="tooltip">Optional Confluence space key used to keep Confluence searches focused.</span></span></span>
       <input type="text" name="confluence_space" value="{{ settings.confluence_space }}" placeholder="SPACE">
     </label>
 
     <label>
-      Jira project
+      <span class="field-title">Jira project <span class="info-tooltip" tabindex="0" aria-label="Optional Jira project key used to keep Jira searches focused.">i<span class="tooltip-content" role="tooltip">Optional Jira project key used to keep Jira searches focused.</span></span></span>
       <input type="text" name="jira_project" value="{{ settings.jira_project }}" placeholder="PROJ">
     </label>
 
     <label>
-      Azure resource group
+      <span class="field-title">Azure resource group <span class="info-tooltip" tabindex="0" aria-label="Optional Azure resource group used to keep Azure searches focused.">i<span class="tooltip-content" role="tooltip">Optional Azure resource group used to keep Azure searches focused.</span></span></span>
       <input type="text" name="azure_resource_group" value="{{ settings.azure_resource_group }}" placeholder="rg-example-dev">
     </label>
 
     <label>
-      Repo roots
+      <span class="field-title">Repo roots <span class="info-tooltip" tabindex="0" aria-label="One or more local folders that contain checked-out Git repositories.">i<span class="tooltip-content" role="tooltip">One or more local folders that contain checked-out Git repositories.</span></span></span>
       <textarea name="repo_roots" placeholder="/Users/example/dev">{{ settings.repo_roots }}</textarea>
     </label>
 
     <label>
-      Repos
+      <span class="field-title">Repos <span class="info-tooltip" tabindex="0" aria-label="Optional newline-separated repository names or paths to include in this run.">i<span class="tooltip-content" role="tooltip">Optional newline-separated repository names or paths to include in this run.</span></span></span>
       <textarea name="repos" placeholder="service-a&#10;service-b">{{ settings.repos }}</textarea>
     </label>
 
     <label>
-      Max diff lines
+      <span class="field-title">Max diff lines <span class="info-tooltip" tabindex="0" aria-label="Maximum number of lines to include from each PR diff when bounded diffs are enabled.">i<span class="tooltip-content" role="tooltip">Maximum number of lines to include from each PR diff when bounded diffs are enabled.</span></span></span>
       <input type="number" name="max_diff_lines" value="500" min="1">
     </label>
 
     <label>
-      Limit
+      <span class="field-title">Limit <span class="info-tooltip" tabindex="0" aria-label="Maximum number of results requested from each selected evidence source.">i<span class="tooltip-content" role="tooltip">Maximum number of results requested from each selected evidence source.</span></span></span>
       <input type="number" name="limit" value="10" min="1">
     </label>
 

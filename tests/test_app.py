@@ -27,6 +27,8 @@ def test_home_page() -> None:
     assert "Repo roots" in response.text
     assert "Discover repos" in response.text
     assert 'class="primary-button"' in response.text
+    assert response.text.count("class=\"info-tooltip\"") >= 9
+    assert "The words are passed together as one topic phrase" in response.text
 
 
 def test_settings_page(monkeypatch, tmp_path) -> None:
