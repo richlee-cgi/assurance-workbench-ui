@@ -118,6 +118,59 @@ function Report-OptionalTool {
     }
 }
 
+function Get-EnvValue {
+    param([string] $Name)
+    $processValue = [Environment]::GetEnvironmentVariable($Name, "Process")
+    if ($processValue) {
+        return $processValue
+    }
+    return [Environment]::GetEnvironmentVariable($Name, "User")
+}
+
+function ConvertFrom-SecureStringPlainText {
+    param([SecureString] $SecureValue)
+    $bstr = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($SecureValue)
+    try {
+        return [Runtime.InteropServices.Marshal]::PtrToStringBSTR($bstr)
+    }
+    finally {
+        [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($bstr)
+    }
+}
+
+function Configure-AtlassianEnv {
+    if ((Get-EnvValue "ATLASSIAN_BASE_URL") -and (Get-EnvValue "ATLASSIAN_EMAIL") -and (Get-EnvValue "ATLASSIAN_API_TOKEN")) {
+        Write-Info "Atlassian environment variables are already set."
+        return
+    }
+
+    Write-Info ""
+    $answer = Read-Host "Atlassian environment variables are not set. Configure them now and save them as user environment variables? [y/N]"
+    if ($answer -notin @("y", "Y", "yes", "YES")) {
+        Write-Info "Skipped Atlassian environment setup."
+        return
+    }
+
+    $baseUrl = Read-Host "Atlassian base URL, for example https://example.atlassian.net"
+    $email = Read-Host "Atlassian email"
+    $token = ConvertFrom-SecureStringPlainText (Read-Host "Atlassian API token" -AsSecureString)
+
+    if (-not $baseUrl -or -not $email -or -not $token) {
+        Write-Info "Skipped Atlassian environment setup because one or more values were blank."
+        return
+    }
+
+    [Environment]::SetEnvironmentVariable("ATLASSIAN_BASE_URL", $baseUrl, "User")
+    [Environment]::SetEnvironmentVariable("ATLASSIAN_EMAIL", $email, "User")
+    [Environment]::SetEnvironmentVariable("ATLASSIAN_API_TOKEN", $token, "User")
+    $env:ATLASSIAN_BASE_URL = $baseUrl
+    $env:ATLASSIAN_EMAIL = $email
+    $env:ATLASSIAN_API_TOKEN = $token
+
+    Write-Info "Saved Atlassian environment variables to the current user environment."
+    Write-Info "Open a new PowerShell window if an existing terminal does not see them."
+}
+
 Require-Command git
 $pythonCommand = Test-Python
 
@@ -147,6 +200,7 @@ Write-Info "Checking optional provider CLIs"
 Report-OptionalTool az
 Report-OptionalTool gh
 Report-OptionalTool pac
+Configure-AtlassianEnv
 
 Write-Info ""
 Write-Info "Install complete."

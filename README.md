@@ -38,7 +38,7 @@ Windows PowerShell:
 irm https://raw.githubusercontent.com/richlee-cgi/assurance-workbench-ui/main/install.ps1 | iex
 ```
 
-The installer checks Python 3.11+ and Git, clones or updates the Workbench repo when needed, creates `.venv`, installs the app and CLI dependency, and reports whether optional provider CLIs (`az`, `gh`, `pac`) are available. It does not install optional provider CLIs, change credentials, or change shell profiles.
+The installer checks Python 3.11+ and Git, clones or updates the Workbench repo when needed, creates `.venv`, installs the app and CLI dependency, and reports whether optional provider CLIs (`az`, `gh`, `pac`) are available. It does not install optional provider CLIs. If Atlassian environment variables are missing, it can optionally prompt for them and persist them for the current user.
 
 Manual setup:
 
@@ -53,7 +53,7 @@ python -m pip install -e ".[dev]"
 
 Then open `http://127.0.0.1:8765`, go to Settings, set your Workbench output folder and source defaults, and run **Check assurance CLI**.
 
-Before running Confluence or Jira evidence, make sure the terminal that starts Workbench has Atlassian environment variables set:
+Before running Confluence or Jira evidence, make sure the terminal that starts Workbench has Atlassian environment variables set. The installer can prompt for these and save them for future terminals. You can also set them manually.
 
 ```powershell
 $env:ATLASSIAN_BASE_URL = "https://example.atlassian.net"
@@ -62,6 +62,8 @@ $env:ATLASSIAN_API_TOKEN = "..."
 ```
 
 For Mac/Linux shells, use `export ATLASSIAN_BASE_URL=...`, `export ATLASSIAN_EMAIL=...` and `export ATLASSIAN_API_TOKEN=...`.
+
+On Mac/Linux, the installer writes a marked `assurance-workbench-ui` block to your shell profile when you choose to save these values. Open a new terminal, or source the profile file shown by the installer, before starting Workbench. On Windows, the installer saves them as user environment variables.
 
 Clone `assurance-cli` separately only if you want to develop the CLI itself or pin the UI to a local CLI checkout. The Settings page still supports an explicit `assurance` executable path as an override.
 

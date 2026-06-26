@@ -81,6 +81,85 @@ report_optional_tool() {
   fi
 }
 
+shell_profile_path() {
+  case "$(basename "${SHELL:-}")" in
+    zsh) printf '%s' "$HOME/.zshrc" ;;
+    bash) printf '%s' "$HOME/.bashrc" ;;
+    *) printf '%s' "$HOME/.profile" ;;
+  esac
+}
+
+shell_quote() {
+  printf "'%s'" "$(printf '%s' "$1" | sed "s/'/'\\\\''/g")"
+}
+
+write_atlassian_profile_block() {
+  local profile_path="$1"
+  local base_url="$2"
+  local email="$3"
+  local api_token="$4"
+  local temp_file
+  temp_file="$(mktemp)"
+  mkdir -p "$(dirname "$profile_path")"
+  touch "$profile_path"
+  awk '
+    $0 == "# >>> assurance-workbench-ui >>>" { skip=1; next }
+    $0 == "# <<< assurance-workbench-ui <<<" { skip=0; next }
+    skip != 1 { print }
+  ' "$profile_path" >"$temp_file"
+  {
+    printf '\n# >>> assurance-workbench-ui >>>\n'
+    printf 'export ATLASSIAN_BASE_URL=%s\n' "$(shell_quote "$base_url")"
+    printf 'export ATLASSIAN_EMAIL=%s\n' "$(shell_quote "$email")"
+    printf 'export ATLASSIAN_API_TOKEN=%s\n' "$(shell_quote "$api_token")"
+    printf '# <<< assurance-workbench-ui <<<\n'
+  } >>"$temp_file"
+  mv "$temp_file" "$profile_path"
+}
+
+configure_atlassian_env() {
+  if [ -n "${ATLASSIAN_BASE_URL:-}" ] && [ -n "${ATLASSIAN_EMAIL:-}" ] && [ -n "${ATLASSIAN_API_TOKEN:-}" ]; then
+    info "Atlassian environment variables are already set in this shell."
+    return
+  fi
+  if [ ! -r /dev/tty ]; then
+    info "Atlassian environment variables are not set. Configure them before running Confluence/Jira evidence."
+    return
+  fi
+
+  local answer
+  printf '\nAtlassian environment variables are not set. Configure them now and save them to your shell profile? [y/N] ' >/dev/tty
+  read -r answer </dev/tty
+  case "$answer" in
+    y|Y|yes|YES) ;;
+    *)
+      info "Skipped Atlassian environment setup."
+      return
+      ;;
+  esac
+
+  local base_url email api_token profile_path
+  printf 'Atlassian base URL, for example https://example.atlassian.net: ' >/dev/tty
+  read -r base_url </dev/tty
+  printf 'Atlassian email: ' >/dev/tty
+  read -r email </dev/tty
+  printf 'Atlassian API token: ' >/dev/tty
+  stty -echo </dev/tty
+  read -r api_token </dev/tty
+  stty echo </dev/tty
+  printf '\n' >/dev/tty
+
+  if [ -z "$base_url" ] || [ -z "$email" ] || [ -z "$api_token" ]; then
+    info "Skipped Atlassian environment setup because one or more values were blank."
+    return
+  fi
+
+  profile_path="$(shell_profile_path)"
+  write_atlassian_profile_block "$profile_path" "$base_url" "$email" "$api_token"
+  info "Saved Atlassian environment variables to $profile_path"
+  info "Open a new terminal, or run: source \"$profile_path\""
+}
+
 require_command git
 PYTHON_BIN="$(python_command)"
 check_python_version "$PYTHON_BIN"
@@ -99,6 +178,7 @@ info "Checking optional provider CLIs"
 report_optional_tool az
 report_optional_tool gh
 report_optional_tool pac
+configure_atlassian_env
 
 info ""
 info "Install complete."
