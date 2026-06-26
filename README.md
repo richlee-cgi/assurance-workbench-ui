@@ -15,10 +15,46 @@ python3 -m venv .venv
 python -m pip install -e ".[dev]"
 ```
 
+### Windows setup
+
+Use PowerShell from the cloned repo:
+
+```powershell
+cd assurance-workbench-ui
+py -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install -e ".[dev]"
+```
+
+If PowerShell blocks virtual environment activation, allow locally-created scripts for the current user:
+
+```powershell
+Set-ExecutionPolicy -Scope CurrentUser RemoteSigned
+```
+
+In Workbench Settings, set the Assurance CLI path to the Windows virtualenv executable from the `assurance-cli` repo, for example:
+
+```text
+C:\path\to\assurance-cli\.venv\Scripts\assurance.exe
+```
+
+Use Windows paths for the Workbench root and repo roots, for example:
+
+```text
+C:\Users\name\Workbench
+C:\Users\name\dev
+```
+
 ## Run
 
 ```bash
 uvicorn app.main:app --reload --host 127.0.0.1 --port 8765
+```
+
+On Windows, this form is often the most reliable:
+
+```powershell
+python -m uvicorn app.main:app --reload --host 127.0.0.1 --port 8765
 ```
 
 Then open:
