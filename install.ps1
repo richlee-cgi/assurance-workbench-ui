@@ -18,6 +18,13 @@ function Fail {
     exit 1
 }
 
+function Assert-LastCommandSucceeded {
+    param([string] $Description)
+    if ($LASTEXITCODE -ne 0) {
+        Fail "$Description failed with exit code $LASTEXITCODE."
+    }
+}
+
 function Require-Command {
     param([string] $Name)
     if (-not (Get-Command $Name -ErrorAction SilentlyContinue)) {
@@ -51,9 +58,11 @@ function Invoke-SelectedPython {
 
     if ($PythonCommand -eq "py") {
         & py -3 @Arguments
+        Assert-LastCommandSucceeded "Python command"
     }
     else {
         & python @Arguments
+        Assert-LastCommandSucceeded "Python command"
     }
 }
 
@@ -65,6 +74,7 @@ function Clone-Or-UpdateRepo {
         }
         Write-Info "Cloning Workbench into $InstallDir"
         git clone $RepoUrl $InstallDir
+        Assert-LastCommandSucceeded "git clone"
         return
     }
 
@@ -82,6 +92,7 @@ function Clone-Or-UpdateRepo {
         }
         Write-Info "Updating existing checkout with git pull --ff-only"
         git pull --ff-only
+        Assert-LastCommandSucceeded "git pull"
     }
     finally {
         Pop-Location
@@ -107,14 +118,21 @@ Set-Location $InstallDir
 Write-Info "Creating virtual environment if needed"
 Invoke-SelectedPython -PythonCommand $pythonCommand -Arguments @("-m", "venv", ".venv")
 
-$venvPython = Join-Path $InstallDir ".venv\Scripts\python.exe"
+$venvPython = if ($IsWindows) {
+    Join-Path $InstallDir ".venv\Scripts\python.exe"
+}
+else {
+    Join-Path $InstallDir ".venv/bin/python"
+}
 if (-not (Test-Path $venvPython)) {
     Fail "Expected virtualenv Python was not created at $venvPython"
 }
 
 Write-Info "Installing/updating Workbench and CLI dependency"
 & $venvPython -m pip install --upgrade pip
+Assert-LastCommandSucceeded "pip upgrade"
 & $venvPython -m pip install -e ".[dev]"
+Assert-LastCommandSucceeded "pip install"
 
 Write-Info "Checking optional provider CLIs"
 Report-OptionalTool az
@@ -126,7 +144,12 @@ Write-Info "Install complete."
 Write-Info ""
 Write-Info "Run:"
 Write-Info "  cd `"$InstallDir`""
-Write-Info "  .\.venv\Scripts\Activate.ps1"
+if ($IsWindows) {
+    Write-Info "  .\.venv\Scripts\Activate.ps1"
+}
+else {
+    Write-Info "  . .venv/bin/activate"
+}
 Write-Info "  python -m uvicorn app.main:app --reload --host $HostName --port $Port"
 Write-Info ""
 Write-Info "Open:"
