@@ -19,7 +19,7 @@
     <article>
       <h3>Settings</h3>
       <p>Use Settings to point the UI at the local <code>assurance</code> executable, choose the evidence output folder, and set default Confluence, Jira, Azure and repository scope.</p>
-      <p>Settings are saved locally in an ignored file. API tokens and credentials are not stored in this UI.</p>
+      <p>Settings are saved locally in <code>.assurance-workbench-ui.json</code>, an ignored file in the UI repo. API tokens and credentials are not stored in this UI.</p>
     </article>
 
     <article>
@@ -70,6 +70,12 @@
       <h3>Results</h3>
       <p>The Results page lists saved evidence packs. Use filters to narrow by topic, preset or source.</p>
       <p>Each result shows metadata, source coverage, command, warnings, logs and links to saved files. Completed runs can be re-run from saved request metadata.</p>
+    </article>
+
+    <article>
+      <h3>Saved files</h3>
+      <p><code>evidence-pack.md</code> is the main evidence bundle. <code>gaps-and-warnings.md</code>, <code>assurance-checks.md</code> and <code>analyst-brief.md</code> are deterministic follow-up files generated from the completed pack.</p>
+      <p><code>command.txt</code>, <code>request.json</code>, <code>stdout.log</code>, <code>stderr.log</code> and <code>exit-code.txt</code> keep the run auditable and repeatable.</p>
     </article>
 
     <article>

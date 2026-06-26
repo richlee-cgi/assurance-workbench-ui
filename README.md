@@ -4,6 +4,8 @@ Local HTMX web UI wrapper for `assurance-cli`.
 
 The CLI remains the evidence engine. This app is a local browser interface for configuring evidence runs, previewing commands, saving results into a Workbench evidence folder, and inspecting completed evidence packs.
 
+The browser-facing name is **Assure-O-Matic 3000 Workbench**.
+
 ## Install
 
 ```bash
@@ -27,7 +29,7 @@ http://127.0.0.1:8765
 
 ## Current Scope
 
-Implemented first slice:
+Implemented:
 
 - FastAPI app shell.
 - Jinja templates.
@@ -43,12 +45,15 @@ Implemented first slice:
 - Results list for saved evidence runs.
 - Result detail view with run metadata, source coverage, command, rendered evidence, warnings, logs, saved-file links and local open actions.
 - Previous-run filters and re-run from saved request metadata.
+- Local user guide.
+- Mechanical gaps, warnings, checks and analyst brief artifacts generated from completed evidence packs.
 - Health endpoint.
 - Route tests.
 
-Not implemented yet:
+Not implemented:
 
-- Deterministic analysis.
+- Local LLM analysis.
+- RAG or long-term indexed knowledge store.
 
 ## Settings
 
@@ -80,6 +85,24 @@ Configured exclusions are applied to evidence runs automatically. `Exclude Confl
 `Refresh cache` tells `assurance-cli` to bypass existing Atlassian cache entries for this run and update the cache with fresh responses.
 
 `No cache` disables cache reads and writes for this run. Use it for one-off live retrievals or when cached evidence may be misleading.
+
+## Output Files
+
+Each run is saved to a timestamped folder under the configured Workbench evidence root.
+
+Common files:
+
+- `evidence-pack.md`: the main Markdown evidence bundle from `assurance-cli`.
+- `stdout.log` and `stderr.log`: raw command output streams.
+- `command.txt`: the exact CLI command that was run.
+- `request.json`: saved UI form settings, used for re-run.
+- `exit-code.txt`: the CLI process exit code.
+- `gaps-and-warnings.md`: browser-friendly Markdown summary of mechanical gaps and warnings.
+- `gaps-and-warnings.json`: structured version of the same findings.
+- `assurance-checks.md`: deterministic checks derived from the completed evidence pack.
+- `analyst-brief.md`: a short, non-AI briefing file for a human analyst.
+
+These files are intended to be readable directly in VS Code, Typora or the Workbench results view.
 
 ## HTMX Asset Strategy
 
