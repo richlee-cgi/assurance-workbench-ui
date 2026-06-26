@@ -129,6 +129,15 @@ legend {
   font-weight: 700;
 }
 
+.field-help {
+  display: block;
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
 input,
 select,
 textarea,

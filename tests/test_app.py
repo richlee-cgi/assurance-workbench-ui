@@ -34,7 +34,8 @@ def test_settings_page(monkeypatch, tmp_path) -> None:
     response = client.get("/settings")
 
     assert response.status_code == 200
-    assert "Assurance executable" in response.text
+    assert "Assurance CLI path override" in response.text
+    assert "Only set this when developing or testing a separate assurance-cli checkout" in response.text
     assert "Workbench evidence root" in response.text
     assert "Default repo roots" in response.text
     assert "Exclude Confluence from parent" in response.text
