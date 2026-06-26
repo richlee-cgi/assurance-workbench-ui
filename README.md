@@ -199,7 +199,7 @@ Leave `assurance_path` blank to use the `assurance-cli` dependency installed wit
 
 ## Evidence Form Options
 
-Configured exclusions are applied to evidence runs automatically. `Exclude Confluence from parent` accepts page IDs or Confluence page URLs. `Excluded Jira teams` uses exact team names and the configured `Jira team exclusion field`, which can be `Team` or a Jira custom field ID such as `customfield_12345`.
+Configured exclusions are applied to evidence runs automatically. `Exclude Confluence from parent` accepts page IDs or Confluence page URLs. `Excluded Jira teams` uses exact team names and the default Jira `Team` field.
 
 `Code repositories` enables local Git repository evidence. The UI passes selected repo roots and repo names to `assurance report evidence-pack --include-code`, so the CLI can search local files, recent commits and repository metadata.
 
