@@ -465,3 +465,19 @@ def test_render_markdown_escapes_html() -> None:
 
     assert "<script>" not in html
     assert "&lt;script&gt;alert(1)&lt;/script&gt;" in html
+
+
+def test_render_markdown_tables() -> None:
+    html = render_markdown("| Repository | Status |\n| --- | --- |\n| dsp-integrations | clean |")
+
+    assert "<table>" in html
+    assert "<th>Repository</th>" in html
+    assert "<td>dsp-integrations</td>" in html
+    assert "| --- | --- |" not in html
+
+
+def test_render_markdown_keeps_tables_inside_code_blocks() -> None:
+    html = render_markdown("```diff\n+| Repository | Status |\n+| --- | --- |\n```")
+
+    assert "<table>" not in html
+    assert "+| Repository | Status |" in html

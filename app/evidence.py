@@ -407,6 +407,8 @@ def render_markdown(markdown: str) -> str:
     lines = markdown.splitlines()
     html: list[str] = []
     paragraph: list[str] = []
+    table_rows: list[list[str]] = []
+    table_has_separator = False
     in_code = False
     code_lines: list[str] = []
     in_list = False
@@ -415,6 +417,31 @@ def render_markdown(markdown: str) -> str:
         if paragraph:
             html.append(f"<p>{escape(' '.join(paragraph))}</p>")
             paragraph.clear()
+
+    def close_table() -> None:
+        nonlocal table_has_separator
+        if not table_rows:
+            return
+        html.append("<table>")
+        body_rows = table_rows
+        if table_has_separator:
+            header = table_rows[0]
+            body_rows = table_rows[1:]
+            html.append("<thead><tr>")
+            for cell in header:
+                html.append(f"<th>{escape(cell)}</th>")
+            html.append("</tr></thead>")
+        if body_rows:
+            html.append("<tbody>")
+            for row in body_rows:
+                html.append("<tr>")
+                for cell in row:
+                    html.append(f"<td>{escape(cell)}</td>")
+                html.append("</tr>")
+            html.append("</tbody>")
+        html.append("</table>")
+        table_rows.clear()
+        table_has_separator = False
 
     def close_list() -> None:
         nonlocal in_list
@@ -427,6 +454,7 @@ def render_markdown(markdown: str) -> str:
         if stripped.startswith("```"):
             flush_paragraph()
             close_list()
+            close_table()
             if in_code:
                 html.append(f"<pre><code>{escape(chr(10).join(code_lines))}</code></pre>")
                 code_lines.clear()
@@ -440,28 +468,54 @@ def render_markdown(markdown: str) -> str:
         if not stripped:
             flush_paragraph()
             close_list()
+            close_table()
             continue
         if stripped.startswith("#"):
             flush_paragraph()
             close_list()
+            close_table()
             level = min(len(stripped) - len(stripped.lstrip("#")), 4)
             text = stripped[level:].strip()
             html.append(f"<h{level}>{escape(text)}</h{level}>")
             continue
+        if _is_table_line(stripped):
+            flush_paragraph()
+            close_list()
+            if _is_table_separator(stripped):
+                table_has_separator = True
+            else:
+                table_rows.append(_table_cells(stripped))
+            continue
         if stripped.startswith("- ") or stripped.startswith("* "):
             flush_paragraph()
+            close_table()
             if not in_list:
                 html.append("<ul>")
                 in_list = True
             html.append(f"<li>{escape(stripped[2:].strip())}</li>")
             continue
+        close_table()
         paragraph.append(stripped)
 
     if in_code:
         html.append(f"<pre><code>{escape(chr(10).join(code_lines))}</code></pre>")
     flush_paragraph()
     close_list()
+    close_table()
     return "\n".join(html)
+
+
+def _is_table_line(line: str) -> bool:
+    return line.startswith("|") and line.endswith("|") and line.count("|") >= 2
+
+
+def _is_table_separator(line: str) -> bool:
+    cells = _table_cells(line)
+    return bool(cells) and all(cell and set(cell) <= {"-", ":", " "} for cell in cells)
+
+
+def _table_cells(line: str) -> list[str]:
+    return [cell.strip() for cell in line.strip().strip("|").split("|")]
 
 
 def preview_markdown(
