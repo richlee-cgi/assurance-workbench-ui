@@ -63,22 +63,6 @@ $env:ATLASSIAN_API_TOKEN = "..."
 
 For Mac/Linux shells, use `export ATLASSIAN_BASE_URL=...`, `export ATLASSIAN_EMAIL=...` and `export ATLASSIAN_API_TOKEN=...`.
 
-Alternatively, put those values in a local `.env` file and set **Assurance env file** on the Settings page, for example:
-
-```text
-/Users/name/dev/assurance-cli/.env
-```
-
-You can also set the same path before starting Workbench:
-
-```bash
-export ASSURANCE_ENV_FILE="/Users/name/dev/assurance-cli/.env"
-```
-
-```powershell
-$env:ASSURANCE_ENV_FILE = "C:\Users\name\dev\assurance-cli\.env"
-```
-
 Clone `assurance-cli` separately only if you want to develop the CLI itself or pin the UI to a local CLI checkout. The Settings page still supports an explicit `assurance` executable path as an override.
 
 For local development across both repos, activate the Workbench virtualenv and install the CLI checkout in editable mode:
@@ -254,7 +238,6 @@ Settings are stored locally in `.assurance-workbench-ui.json`, which is ignored 
 Stored values:
 
 - `assurance_path`
-- `assurance_env_file`
 - `workbench_root`
 - `confluence_space`
 - `jira_project`
@@ -265,7 +248,7 @@ Stored values:
 - `jira_team_field`
 - `exclude_jira_teams`
 
-The UI does not store API tokens or credentials. `assurance_env_file` is only a path to a local env file; keep the env file itself out of Git.
+The UI does not store API tokens or credentials.
 
 Leave `assurance_path` blank to use the `assurance-cli` dependency installed with this app. Set it only when you want to use a separate local CLI executable.
 

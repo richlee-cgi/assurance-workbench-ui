@@ -16,11 +16,6 @@
     </label>
 
     <label>
-      <span class="field-title">Assurance env file <span class="info-tooltip" tabindex="0" aria-label="Optional path to a .env file passed to assurance-cli subprocesses. Useful when credentials live in a separate CLI checkout.">i<span class="tooltip-content" role="tooltip">Optional path to a .env file passed to assurance-cli subprocesses. Useful when credentials live in a separate CLI checkout.</span></span></span>
-      <input type="text" name="assurance_env_file" value="{{ settings.assurance_env_file }}" placeholder="/path/to/assurance-cli/.env">
-    </label>
-
-    <label>
       <span class="field-title">Workbench evidence root <span class="info-tooltip" tabindex="0" aria-label="Folder where timestamped evidence run folders will be saved.">i<span class="tooltip-content" role="tooltip">Folder where timestamped evidence run folders will be saved.</span></span></span>
       <input type="text" name="workbench_root" value="{{ settings.workbench_root }}" placeholder="/path/to/Workbench/30 Workbenches/.../02-Evidence">
     </label>
@@ -81,7 +76,7 @@
   <div id="cli-check-result" class="fragment-slot" aria-live="polite"></div>
 
   <div class="notice">
-    Settings are stored in <code>{{ settings_path }}</code>, which is ignored by Git. Do not paste credentials into this UI; store only the path to a local env file.
+    Settings are stored in <code>{{ settings_path }}</code>, which is ignored by Git. Do not store credentials in this UI.
   </div>
 </section>
 <script>

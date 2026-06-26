@@ -8,8 +8,6 @@ import sys
 from dataclasses import dataclass
 from pathlib import Path
 
-from app.env import subprocess_env
-
 
 @dataclass(frozen=True)
 class CliCheckResult:
@@ -45,19 +43,19 @@ def _venv_assurance_executable() -> str | None:
     return None
 
 
-def check_assurance_cli(configured_path: str, env_file: str = "") -> CliCheckResult:
-    return run_assurance_check(configured_path, ["--help"], "assurance CLI is available.", "assurance --help", env_file=env_file)
+def check_assurance_cli(configured_path: str) -> CliCheckResult:
+    return run_assurance_check(configured_path, ["--help"], "assurance CLI is available.", "assurance --help")
 
 
-def check_azure(configured_path: str, env_file: str = "") -> CliCheckResult:
-    return run_assurance_check(configured_path, ["azure", "check"], "Azure check completed.", "assurance azure check", timeout=20, env_file=env_file)
+def check_azure(configured_path: str) -> CliCheckResult:
+    return run_assurance_check(configured_path, ["azure", "check"], "Azure check completed.", "assurance azure check", timeout=20)
 
 
-def check_dataverse(configured_path: str, env_file: str = "") -> CliCheckResult:
-    return run_assurance_check(configured_path, ["dataverse", "check"], "Dataverse check completed.", "assurance dataverse check", timeout=20, env_file=env_file)
+def check_dataverse(configured_path: str) -> CliCheckResult:
+    return run_assurance_check(configured_path, ["dataverse", "check"], "Dataverse check completed.", "assurance dataverse check", timeout=20)
 
 
-def discover_code_repos(configured_path: str, repo_roots: tuple[str, ...], env_file: str = "") -> CodeRepoDiscoveryResult:
+def discover_code_repos(configured_path: str, repo_roots: tuple[str, ...]) -> CodeRepoDiscoveryResult:
     executable = resolve_assurance_path(configured_path)
     fallback = ["assurance", "code", "repos", "--raw"]
     if not executable:
@@ -66,7 +64,7 @@ def discover_code_repos(configured_path: str, repo_roots: tuple[str, ...], env_f
     for root in repo_roots:
         command.extend(["--repo-root", root])
     try:
-        completed = subprocess.run(command, capture_output=True, text=True, check=False, timeout=20, env=subprocess_env(env_file))
+        completed = subprocess.run(command, capture_output=True, text=True, check=False, timeout=20)
     except OSError as exc:
         return CodeRepoDiscoveryResult(False, command, [], f"Unable to run assurance: {exc}")
     except subprocess.TimeoutExpired:
@@ -90,14 +88,13 @@ def run_assurance_check(
     fallback_command: str,
     *,
     timeout: int = 10,
-    env_file: str = "",
 ) -> CliCheckResult:
     executable = resolve_assurance_path(configured_path)
     if not executable:
         return CliCheckResult(ok=False, command=fallback_command.split(), message="assurance executable not configured or found on PATH.")
     command = [executable, *args]
     try:
-        completed = subprocess.run(command, capture_output=True, text=True, check=False, timeout=timeout, env=subprocess_env(env_file))
+        completed = subprocess.run(command, capture_output=True, text=True, check=False, timeout=timeout)
     except OSError as exc:
         return CliCheckResult(ok=False, command=command, message=f"Unable to run assurance: {exc}")
     except subprocess.TimeoutExpired:

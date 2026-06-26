@@ -98,7 +98,7 @@ async def save_settings_route(request: Request) -> HTMLResponse:
 async def check_assurance_route(request: Request) -> HTMLResponse:
     form = await request.form()
     current_settings = settings_from_form(form)
-    result = check_assurance_cli(current_settings.assurance_path, current_settings.assurance_env_file)
+    result = check_assurance_cli(current_settings.assurance_path)
     return templates.TemplateResponse(
         request,
         "partials/cli_check_result.html",
@@ -112,7 +112,7 @@ async def check_assurance_route(request: Request) -> HTMLResponse:
 async def check_azure_route(request: Request) -> HTMLResponse:
     form = await request.form()
     current_settings = settings_from_form(form)
-    result = check_azure(current_settings.assurance_path, current_settings.assurance_env_file)
+    result = check_azure(current_settings.assurance_path)
     return templates.TemplateResponse(
         request,
         "partials/cli_check_result.html",
@@ -126,7 +126,7 @@ async def check_azure_route(request: Request) -> HTMLResponse:
 async def check_dataverse_route(request: Request) -> HTMLResponse:
     form = await request.form()
     current_settings = settings_from_form(form)
-    result = check_dataverse(current_settings.assurance_path, current_settings.assurance_env_file)
+    result = check_dataverse(current_settings.assurance_path)
     return templates.TemplateResponse(
         request,
         "partials/cli_check_result.html",
@@ -158,7 +158,7 @@ async def discover_code_repos_route(request: Request) -> HTMLResponse:
     form_data = await request.form()
     current_settings = load_settings()
     form = evidence_form_from_data(form_data, current_settings)
-    result = discover_code_repos(current_settings.assurance_path, form.repo_roots, current_settings.assurance_env_file)
+    result = discover_code_repos(current_settings.assurance_path, form.repo_roots)
     return templates.TemplateResponse(
         request,
         "partials/code_repos.html",
