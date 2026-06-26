@@ -25,6 +25,7 @@ from app.evidence import (
 )
 from app.jobs import cancel_job, get_job, start_evidence_pack_job
 from app.settings import load_settings, save_settings, settings_from_form, settings_path
+from app.version import APP_VERSION
 
 BASE_DIR = Path(__file__).resolve().parent
 
@@ -32,6 +33,7 @@ app = FastAPI(title="Assure-O-Matic 3000 Workbench")
 app.mount("/static", StaticFiles(directory=BASE_DIR / "static"), name="static")
 
 templates = Jinja2Templates(directory=BASE_DIR / "templates")
+templates.env.globals["app_version"] = APP_VERSION
 
 
 @app.get("/", response_class=HTMLResponse)

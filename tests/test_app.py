@@ -16,6 +16,7 @@ def test_home_page() -> None:
     assert response.status_code == 200
     assert "<title>Assure-O-Matic 3000 Workbench</title>" in response.text
     assert "Assure-O-Matic 3000 Workbench" in response.text
+    assert "v0.1.0" in response.text
     assert "/static/icons/favicon.svg" in response.text
     assert "/static/icons/app-icon.svg" in response.text
     assert "/static/manifest.webmanifest" in response.text

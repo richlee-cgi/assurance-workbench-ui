@@ -43,6 +43,16 @@ body {
   flex: 0 0 auto;
 }
 
+.version-label {
+  padding: 3px 7px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
 .site-header h1,
 .section-header h2 {
   margin: 0;
