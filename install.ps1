@@ -1,11 +1,20 @@
 param(
-    [string] $InstallDir = "$HOME\dev\assurance-workbench-ui",
+    [string] $InstallDir = "",
     [string] $RepoUrl = "https://github.com/richlee-cgi/assurance-workbench-ui.git",
     [string] $HostName = "127.0.0.1",
     [int] $Port = 8765
 )
 
 $ErrorActionPreference = "Stop"
+$scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
+if (-not $InstallDir) {
+    if ((Test-Path (Join-Path $scriptDir ".git")) -and (Test-Path (Join-Path $scriptDir "pyproject.toml"))) {
+        $InstallDir = $scriptDir
+    }
+    else {
+        $InstallDir = "$HOME\dev\assurance-workbench-ui"
+    }
+}
 
 function Write-Info {
     param([string] $Message)

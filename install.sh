@@ -2,9 +2,23 @@
 set -euo pipefail
 
 REPO_URL="${ASSURANCE_WORKBENCH_UI_REPO:-https://github.com/richlee-cgi/assurance-workbench-ui.git}"
-INSTALL_DIR="${ASSURANCE_WORKBENCH_UI_DIR:-$HOME/dev/assurance-workbench-ui}"
 HOST="${ASSURANCE_WORKBENCH_UI_HOST:-127.0.0.1}"
 PORT="${ASSURANCE_WORKBENCH_UI_PORT:-8765}"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd || true)"
+
+default_install_dir() {
+  if [ -n "${ASSURANCE_WORKBENCH_UI_DIR:-}" ]; then
+    printf '%s' "$ASSURANCE_WORKBENCH_UI_DIR"
+    return
+  fi
+  if [ -n "$SCRIPT_DIR" ] && [ -d "$SCRIPT_DIR/.git" ] && [ -f "$SCRIPT_DIR/pyproject.toml" ]; then
+    printf '%s' "$SCRIPT_DIR"
+    return
+  fi
+  printf '%s' "$HOME/dev/assurance-workbench-ui"
+}
+
+INSTALL_DIR="$(default_install_dir)"
 
 info() {
   printf '%s\n' "$*"
