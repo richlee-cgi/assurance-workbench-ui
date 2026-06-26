@@ -51,12 +51,12 @@
     </label>
 
     <label>
-      <span class="field-title">Jira team field <span class="info-tooltip" tabindex="0" aria-label="Jira field used for team exclusions, usually Team or a customfield ID.">i<span class="tooltip-content" role="tooltip">Jira field used for team exclusions, usually Team or a customfield ID.</span></span></span>
+      <span class="field-title">Jira team exclusion field <span class="info-tooltip" tabindex="0" aria-label="Jira field used when applying excluded team names, usually Team or a customfield ID.">i<span class="tooltip-content" role="tooltip">Jira field used when applying excluded team names, usually Team or a customfield ID.</span></span></span>
       <input type="text" name="jira_team_field" value="{{ settings.jira_team_field }}" placeholder="Team or customfield_12345">
     </label>
 
     <label>
-      <span class="field-title">Exclude Jira from Team <span class="info-tooltip" tabindex="0" aria-label="Exact Jira team names to exclude from evidence results.">i<span class="tooltip-content" role="tooltip">Exact Jira team names to exclude from evidence results.</span></span></span>
+      <span class="field-title">Excluded Jira teams <span class="info-tooltip" tabindex="0" aria-label="Exact Jira team names to remove from evidence results.">i<span class="tooltip-content" role="tooltip">Exact Jira team names to remove from evidence results.</span></span></span>
       <textarea name="exclude_jira_teams" placeholder="DSP Assurance">{{ settings.exclude_jira_teams }}</textarea>
     </label>
 

@@ -40,7 +40,8 @@ def test_settings_page(monkeypatch, tmp_path) -> None:
     assert "Workbench evidence root" in response.text
     assert "Default repo roots" in response.text
     assert "Exclude Confluence from parent" in response.text
-    assert "Exclude Jira from Team" in response.text
+    assert "Jira team exclusion field" in response.text
+    assert "Excluded Jira teams" in response.text
     assert "hx-post=\"/settings\"" in response.text
     assert "id=\"cli-check-spinner\"" in response.text
     assert "data-cli-check-button" in response.text
