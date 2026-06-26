@@ -104,6 +104,16 @@ nav a.active {
   margin-bottom: 24px;
 }
 
+.section-header.compact-header {
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.section-header.compact-header p {
+  margin: 4px 0 0;
+  color: var(--muted);
+}
+
 .status-pill {
   display: inline-flex;
   align-items: center;
@@ -320,6 +330,10 @@ fieldset input {
   border-radius: 8px;
   background: #fffaeb;
   color: #7a4b00;
+}
+
+.preview-notice {
+  margin: 0 0 12px;
 }
 
 .success-notice {
@@ -623,6 +637,11 @@ pre {
   border-radius: 8px;
   background: #ffffff;
   line-height: 1.6;
+}
+
+.evidence-preview {
+  max-height: 72vh;
+  overflow: auto;
 }
 
 .markdown-body h1,

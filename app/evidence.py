@@ -29,6 +29,8 @@ RUN_FILES = {
     "assurance-checks.md",
     "analyst-brief.md",
 }
+EVIDENCE_PREVIEW_MAX_CHARS = 18_000
+EVIDENCE_PREVIEW_MAX_SECTIONS = 4
 
 
 @dataclass(frozen=True)
@@ -88,6 +90,10 @@ class EvidenceRunDetail:
     evidence_html: str
     warnings: tuple[str, ...]
     warning_items: tuple[GapWarningItem, ...]
+    evidence_preview_html: str = ""
+    evidence_preview_truncated: bool = False
+    evidence_line_count: int = 0
+    evidence_char_count: int = 0
 
 
 @dataclass(frozen=True)
@@ -304,6 +310,7 @@ def load_evidence_run(settings: AppSettings, run_id: str) -> EvidenceRunDetail |
     stdout = _read_text(run_dir / "stdout.log")
     stderr = _read_text(run_dir / "stderr.log")
     evidence_markdown = _read_text(summary.evidence_path)
+    evidence_preview_markdown, evidence_preview_truncated = preview_markdown(evidence_markdown)
     warning_items = _extract_warning_items(evidence_markdown, stderr)
     return EvidenceRunDetail(
         summary=summary,
@@ -314,6 +321,10 @@ def load_evidence_run(settings: AppSettings, run_id: str) -> EvidenceRunDetail |
         evidence_html=render_markdown(evidence_markdown),
         warnings=tuple(item.text for item in warning_items),
         warning_items=warning_items,
+        evidence_preview_html=render_markdown(evidence_preview_markdown),
+        evidence_preview_truncated=evidence_preview_truncated,
+        evidence_line_count=len(evidence_markdown.splitlines()),
+        evidence_char_count=len(evidence_markdown),
     )
 
 
@@ -453,8 +464,43 @@ def render_markdown(markdown: str) -> str:
     return "\n".join(html)
 
 
+def preview_markdown(
+    markdown: str,
+    *,
+    max_chars: int = EVIDENCE_PREVIEW_MAX_CHARS,
+    max_sections: int = EVIDENCE_PREVIEW_MAX_SECTIONS,
+) -> tuple[str, bool]:
+    if len(markdown) <= max_chars and _section_count(markdown) <= max_sections:
+        return markdown, False
+
+    preview_lines: list[str] = []
+    char_count = 0
+    section_count = 0
+    in_code = False
+
+    for line in markdown.splitlines():
+        stripped = line.strip()
+        if stripped.startswith("```"):
+            in_code = not in_code
+        if not in_code and stripped.startswith("## "):
+            section_count += 1
+            if section_count > max_sections:
+                return "\n".join(preview_lines).rstrip(), True
+        line_length = len(line) + 1
+        if char_count + line_length > max_chars:
+            return "\n".join(preview_lines).rstrip(), True
+        preview_lines.append(line)
+        char_count += line_length
+
+    return "\n".join(preview_lines).rstrip(), False
+
+
 def shell_command(command: list[str]) -> str:
     return " ".join(shlex.quote(part) for part in command)
+
+
+def _section_count(markdown: str) -> int:
+    return sum(1 for line in markdown.splitlines() if line.strip().startswith("## "))
 
 
 def _valid_preset(value: str) -> str:

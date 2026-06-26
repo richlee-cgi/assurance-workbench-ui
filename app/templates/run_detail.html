@@ -32,6 +32,14 @@
           <dt>Sources</dt>
           <dd>{{ detail.summary.sources | join(', ') if detail.summary.sources else 'none' }}</dd>
         </div>
+        <div>
+          <dt>Evidence size</dt>
+          <dd>{{ "{:,}".format(detail.evidence_line_count) }} lines / {{ "{:,}".format(detail.evidence_char_count) }} chars</dd>
+        </div>
+        <div>
+          <dt>Findings</dt>
+          <dd>{{ detail.warning_items | length }} gaps/warnings</dd>
+        </div>
       </dl>
     </section>
 
@@ -104,9 +112,20 @@
   {% endif %}
 
   <section class="result-section">
-    <h3>Evidence pack</h3>
-    {% if detail.evidence_html %}
-      <article class="markdown-body">{{ detail.evidence_html | safe }}</article>
+    <div class="section-header compact-header">
+      <div>
+        <h3>Evidence pack preview</h3>
+        <p>Showing a bounded browser preview. Use the saved files or VS Code for full exploration.</p>
+      </div>
+      <a class="button-link secondary" href="/runs/{{ detail.summary.id }}/files/evidence-pack.md">Open full evidence pack</a>
+    </div>
+    {% if detail.evidence_preview_truncated %}
+      <div class="notice preview-notice">
+        Preview is truncated to the first sections or size limit.
+      </div>
+    {% endif %}
+    {% if detail.evidence_preview_html %}
+      <article class="markdown-body evidence-preview">{{ detail.evidence_preview_html | safe }}</article>
     {% else %}
       <div class="empty-state">No evidence-pack.md file was found for this run.</div>
     {% endif %}

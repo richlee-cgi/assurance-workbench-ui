@@ -16,6 +16,7 @@ from app.evidence import (
     load_evidence_run,
     open_run_folder,
     output_folder_preview,
+    preview_markdown,
     render_markdown,
     run_evidence_pack,
     run_file_path,
@@ -287,9 +288,41 @@ def test_load_evidence_run_renders_markdown_and_warnings(tmp_path) -> None:
 
     assert detail is not None
     assert "<h1>Evidence</h1>" in detail.evidence_html
+    assert "<h1>Evidence</h1>" in detail.evidence_preview_html
+    assert detail.evidence_preview_truncated is False
+    assert detail.evidence_line_count == 3
     assert "<li>gap: missing Jira context</li>" in detail.evidence_html
     assert detail.warnings == ("- gap: missing Jira context", "warning: partial data")
     assert detail.stdout == "started\n"
+
+
+def test_preview_markdown_limits_sections() -> None:
+    markdown = "\n".join(
+        [
+            "# Evidence",
+            "Intro",
+            "## One",
+            "First",
+            "## Two",
+            "Second",
+            "## Three",
+            "Third",
+        ]
+    )
+
+    preview, truncated = preview_markdown(markdown, max_sections=2, max_chars=10_000)
+
+    assert truncated is True
+    assert "## One" in preview
+    assert "## Two" in preview
+    assert "## Three" not in preview
+
+
+def test_preview_markdown_limits_size() -> None:
+    preview, truncated = preview_markdown("A\nB\nC\nD", max_sections=10, max_chars=4)
+
+    assert truncated is True
+    assert preview == "A\nB"
 
 
 def test_load_evidence_run_rejects_path_traversal(tmp_path) -> None:

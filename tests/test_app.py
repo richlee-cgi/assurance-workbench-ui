@@ -397,6 +397,10 @@ def test_run_detail_page(monkeypatch, tmp_path) -> None:
                 locations=("jira: DSP-123 (https://example.atlassian.net/browse/DSP-123)",),
             ),
         ),
+        evidence_preview_html="<h1>Evidence</h1>",
+        evidence_preview_truncated=True,
+        evidence_line_count=42,
+        evidence_char_count=2048,
     )
     monkeypatch.setattr("app.main.load_evidence_run", lambda settings, run_id: detail)
 
@@ -406,6 +410,8 @@ def test_run_detail_page(monkeypatch, tmp_path) -> None:
     assert "Run metadata" in response.text
     assert "Source coverage" in response.text
     assert "Saved files" in response.text
+    assert "Evidence size" in response.text
+    assert "42 lines / 2,048 chars" in response.text
     assert "Re-run" in response.text
     assert "Delete run" in response.text
     assert f"/runs/{run_dir.name}/files/evidence-pack.md" in response.text
@@ -414,6 +420,9 @@ def test_run_detail_page(monkeypatch, tmp_path) -> None:
     assert f"/runs/{run_dir.name}/files/assurance-checks.md" in response.text
     assert f"/runs/{run_dir.name}/files/analyst-brief.md" in response.text
     assert "assurance report evidence-pack booking --include-azure" in response.text
+    assert "Evidence pack preview" in response.text
+    assert "Open full evidence pack" in response.text
+    assert "Preview is truncated" in response.text
     assert "<h1>Evidence</h1>" in response.text
     assert "gap: missing Jira context" in response.text
     assert "contains &#34;gap&#34;" in response.text
