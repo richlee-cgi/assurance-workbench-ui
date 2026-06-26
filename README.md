@@ -37,6 +37,16 @@ python -m uvicorn app.main:app --reload --host 127.0.0.1 --port 8765
 
 Then open `http://127.0.0.1:8765`, go to Settings, set your Workbench output folder and source defaults, and run **Check assurance CLI**.
 
+Before running Confluence or Jira evidence, make sure the terminal that starts Workbench has Atlassian environment variables set:
+
+```powershell
+$env:ATLASSIAN_BASE_URL = "https://example.atlassian.net"
+$env:ATLASSIAN_EMAIL = "you@example.com"
+$env:ATLASSIAN_API_TOKEN = "..."
+```
+
+For Mac/Linux shells, use `export ATLASSIAN_BASE_URL=...`, `export ATLASSIAN_EMAIL=...` and `export ATLASSIAN_API_TOKEN=...`.
+
 Clone `assurance-cli` separately only if you want to develop the CLI itself or pin the UI to a local CLI checkout. The Settings page still supports an explicit `assurance` executable path as an override.
 
 For local development across both repos, activate the Workbench virtualenv and install the CLI checkout in editable mode:
@@ -94,6 +104,12 @@ On Windows, this form is often the most reliable:
 
 ```powershell
 python -m uvicorn app.main:app --reload --host 127.0.0.1 --port 8765
+```
+
+If PowerShell blocks virtualenv activation, either run `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned` or avoid activation:
+
+```powershell
+.\.venv\Scripts\python.exe -m uvicorn app.main:app --reload --host 127.0.0.1 --port 8765
 ```
 
 Then open:
