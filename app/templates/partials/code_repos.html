@@ -1,4 +1,5 @@
 <div class="inline-result {{ 'success' if result.ok else 'error' }}">
+  <button class="dismiss-button" type="button" aria-label="Dismiss message" onclick="this.closest('.inline-result').remove()">×</button>
   <strong>{{ result.message }}</strong>
   {% if result.repositories %}
     <div class="repo-list">

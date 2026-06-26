@@ -469,6 +469,7 @@ def test_open_folder_route(monkeypatch) -> None:
     assert response.status_code == 200
     assert "Action completed" in response.text
     assert "Opened run folder" in response.text
+    assert 'aria-label="Dismiss message"' in response.text
 
 
 def test_open_vscode_route_reports_failure(monkeypatch) -> None:

@@ -1,4 +1,5 @@
 <div class="inline-result {{ 'success' if result.exit_code == 0 else 'error' }}">
+  <button class="dismiss-button" type="button" aria-label="Dismiss message" onclick="this.closest('.inline-result').remove()">×</button>
   <strong>{{ 'Run completed' if result.exit_code == 0 else 'Run failed' }}</strong>
   <div class="command-line">{{ shell_command }}</div>
   <dl class="result-list">

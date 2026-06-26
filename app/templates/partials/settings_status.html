@@ -1,3 +1,4 @@
 <div class="inline-result {{ status }}">
+  <button class="dismiss-button" type="button" aria-label="Dismiss message" onclick="this.closest('.inline-result').remove()">×</button>
   {{ message }}
 </div>

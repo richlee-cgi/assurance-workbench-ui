@@ -3,6 +3,9 @@
   class="inline-result {{ 'success' if job.exit_code == 0 else 'error' if job.exit_code else '' }}"
   {% if job.running %}hx-get="/jobs/{{ job.id }}" hx-trigger="every 1s" hx-swap="outerHTML"{% endif %}
 >
+  {% if not job.running %}
+    <button class="dismiss-button" type="button" aria-label="Dismiss message" onclick="this.closest('.inline-result').remove()">×</button>
+  {% endif %}
   <strong>
     {% if job.running %}
       Run in progress
@@ -55,6 +58,7 @@
 </div>
 {% else %}
 <div class="inline-result error">
+  <button class="dismiss-button" type="button" aria-label="Dismiss message" onclick="this.closest('.inline-result').remove()">×</button>
   <strong>Run not found</strong>
 </div>
 {% endif %}

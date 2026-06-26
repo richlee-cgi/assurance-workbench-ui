@@ -324,8 +324,9 @@ fieldset input {
 }
 
 .notice {
+  position: relative;
   margin-top: 24px;
-  padding: 14px 16px;
+  padding: 14px 44px 14px 16px;
   border: 1px solid #fedf89;
   border-radius: 8px;
   background: #fffaeb;
@@ -426,10 +427,46 @@ fieldset input {
 }
 
 .inline-result {
+  position: relative;
   padding: 12px 14px;
   border-radius: 8px;
   border: 1px solid var(--border);
   background: #ffffff;
+}
+
+.inline-result:has(.dismiss-button) {
+  padding-right: 44px;
+}
+
+.dismiss-button,
+button.dismiss-button[type="button"] {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  min-width: 24px;
+  height: 24px;
+  min-height: 24px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: currentColor;
+  cursor: pointer;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1;
+  opacity: 0.72;
+}
+
+.dismiss-button:hover,
+.dismiss-button:focus {
+  background: rgb(16 24 40 / 8%);
+  opacity: 1;
 }
 
 .inline-result.success {

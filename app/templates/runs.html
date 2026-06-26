@@ -10,9 +10,15 @@
   </div>
 
   {% if deleted %}
-    <div class="notice success-notice">Evidence run deleted.</div>
+    <div class="notice success-notice">
+      <button class="dismiss-button" type="button" aria-label="Dismiss message" onclick="this.closest('.notice').remove()">×</button>
+      Evidence run deleted.
+    </div>
   {% elif delete_failed %}
-    <div class="notice error-notice">Evidence run could not be deleted.</div>
+    <div class="notice error-notice">
+      <button class="dismiss-button" type="button" aria-label="Dismiss message" onclick="this.closest('.notice').remove()">×</button>
+      Evidence run could not be deleted.
+    </div>
   {% endif %}
 
   <form class="filter-form" method="get" action="/runs">
