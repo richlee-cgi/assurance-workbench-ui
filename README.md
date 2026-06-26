@@ -32,7 +32,7 @@ cd assurance-workbench-ui
 python3 -m venv .venv
 . .venv/bin/activate
 python -m pip install -e ".[dev]"
-python -m uvicorn app.main:app --reload --host 127.0.0.1 --port 8765
+./run.sh
 ```
 
 Then open `http://127.0.0.1:8765`, go to Settings, set your Workbench output folder and source defaults, and run **Check assurance CLI**.
@@ -96,20 +96,50 @@ C:\Users\name\dev
 
 ## Run
 
+Mac/Linux:
+
 ```bash
-uvicorn app.main:app --reload --host 127.0.0.1 --port 8765
+./run.sh
 ```
 
-On Windows, this form is often the most reliable:
+Windows:
 
 ```powershell
-python -m uvicorn app.main:app --reload --host 127.0.0.1 --port 8765
+.\run.ps1
 ```
 
-If PowerShell blocks virtualenv activation, either run `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned` or avoid activation:
+Then open:
+
+```text
+http://127.0.0.1:8765
+```
+
+You can still run Uvicorn directly if needed:
+
+```bash
+.venv/bin/python -m uvicorn app.main:app --reload --host 127.0.0.1 --port 8765
+```
 
 ```powershell
 .\.venv\Scripts\python.exe -m uvicorn app.main:app --reload --host 127.0.0.1 --port 8765
+```
+
+## Restarting The Workbench
+
+The installer does not create a background service or startup item. After a reboot, open a terminal and start the local server again from the cloned repo.
+
+Mac/Linux:
+
+```bash
+cd ~/dev/assurance-workbench-ui
+./run.sh
+```
+
+Windows:
+
+```powershell
+cd "$HOME\dev\assurance-workbench-ui"
+.\run.ps1
 ```
 
 Then open:

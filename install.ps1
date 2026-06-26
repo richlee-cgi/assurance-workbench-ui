@@ -142,15 +142,9 @@ Report-OptionalTool pac
 Write-Info ""
 Write-Info "Install complete."
 Write-Info ""
-Write-Info "Run:"
+Write-Info "Start or restart after reboot:"
 Write-Info "  cd `"$InstallDir`""
-if ($IsWindows) {
-    Write-Info "  .\.venv\Scripts\Activate.ps1"
-}
-else {
-    Write-Info "  . .venv/bin/activate"
-}
-Write-Info "  python -m uvicorn app.main:app --reload --host $HostName --port $Port"
+Write-Info "  .\run.ps1"
 Write-Info ""
 Write-Info "Open:"
 Write-Info "  http://$HostName`:$Port"
@@ -168,6 +162,6 @@ if ($IsWindows) {
     Write-Info ""
     Write-Info "If PowerShell blocks activation, either run:"
     Write-Info "  Set-ExecutionPolicy -Scope CurrentUser RemoteSigned"
-    Write-Info "or start without activation:"
-    Write-Info "  .\.venv\Scripts\python.exe -m uvicorn app.main:app --reload --host $HostName --port $Port"
+    Write-Info "or start with:"
+    Write-Info "  .\run.ps1"
 }
