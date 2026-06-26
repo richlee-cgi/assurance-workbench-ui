@@ -13,5 +13,8 @@ if [ ! -x "$PYTHON_BIN" ]; then
 fi
 
 cd "$SCRIPT_DIR"
+if [ -z "${ATLASSIAN_BASE_URL:-}" ] || [ -z "${ATLASSIAN_EMAIL:-}" ] || [ -z "${ATLASSIAN_API_TOKEN:-}" ]; then
+  printf 'WARNING: Atlassian environment variables are incomplete; Confluence/Jira evidence will fail until ATLASSIAN_BASE_URL, ATLASSIAN_EMAIL and ATLASSIAN_API_TOKEN are set.\n' >&2
+fi
 printf 'Starting Assure-O-Matic 3000 Workbench at http://%s:%s\n' "$HOST" "$PORT"
 exec "$PYTHON_BIN" -m uvicorn app.main:app --reload --host "$HOST" --port "$PORT"

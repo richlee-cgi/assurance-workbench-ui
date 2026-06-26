@@ -19,6 +19,9 @@ if (-not (Test-Path $venvPython)) {
 }
 
 Set-Location $scriptDir
+if (-not $env:ATLASSIAN_BASE_URL -or -not $env:ATLASSIAN_EMAIL -or -not $env:ATLASSIAN_API_TOKEN) {
+    Write-Warning "Atlassian environment variables are incomplete; Confluence/Jira evidence will fail until ATLASSIAN_BASE_URL, ATLASSIAN_EMAIL and ATLASSIAN_API_TOKEN are set."
+}
 Write-Host "Starting Assure-O-Matic 3000 Workbench at http://$HostName`:$Port"
 & $venvPython -m uvicorn app.main:app --reload --host $HostName --port $Port
 exit $LASTEXITCODE
