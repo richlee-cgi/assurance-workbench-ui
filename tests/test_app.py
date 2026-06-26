@@ -421,7 +421,7 @@ def test_run_detail_page(monkeypatch, tmp_path) -> None:
     assert f"/runs/{run_dir.name}/files/analyst-brief.md" in response.text
     assert "assurance report evidence-pack booking --include-azure" in response.text
     assert "Evidence pack preview" in response.text
-    assert "Open full evidence pack" in response.text
+    assert "Open full evidence pack" not in response.text
     assert "Preview is truncated" in response.text
     assert "<h1>Evidence</h1>" in response.text
     assert "gap: missing Jira context" in response.text
