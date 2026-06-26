@@ -25,6 +25,7 @@ def test_home_page() -> None:
     assert "Code repositories" in response.text
     assert "Repo roots" in response.text
     assert "Discover repos" in response.text
+    assert 'class="primary-button"' in response.text
 
 
 def test_settings_page(monkeypatch, tmp_path) -> None:

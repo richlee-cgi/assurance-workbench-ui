@@ -268,6 +268,13 @@ button[type="button"] {
   color: var(--accent);
 }
 
+.primary-button,
+button.primary-button[type="button"] {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #ffffff;
+}
+
 fieldset {
   display: grid;
   grid-column: 1 / -1;
