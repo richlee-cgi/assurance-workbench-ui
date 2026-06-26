@@ -10,6 +10,22 @@ The browser-facing name is **Assure-O-Matic 3000 Workbench**.
 
 If you want the browser app, clone this repo first. Installing it also installs `assurance-cli` from GitHub as a Python dependency, so the install needs network access to GitHub.
 
+Mac/Linux:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/richlee-cgi/assurance-workbench-ui/main/install.sh | bash
+```
+
+Windows PowerShell:
+
+```powershell
+irm https://raw.githubusercontent.com/richlee-cgi/assurance-workbench-ui/main/install.ps1 | iex
+```
+
+The installer checks Python 3.11+ and Git, clones or updates the Workbench repo, creates `.venv`, installs the app and CLI dependency, and reports whether optional provider CLIs (`az`, `gh`, `pac`) are available. It does not install optional provider CLIs, change credentials, or change shell profiles.
+
+Manual setup:
+
 ```bash
 git clone https://github.com/richlee-cgi/assurance-workbench-ui.git
 cd assurance-workbench-ui
