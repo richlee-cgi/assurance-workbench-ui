@@ -5,8 +5,12 @@ param(
 
 $ErrorActionPreference = "Stop"
 
+function Test-IsWindowsHost {
+    return [System.IO.Path]::DirectorySeparatorChar -eq "\"
+}
+
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
-$venvPython = if ($IsWindows) {
+$venvPython = if (Test-IsWindowsHost) {
     Join-Path $scriptDir ".venv\Scripts\python.exe"
 }
 else {

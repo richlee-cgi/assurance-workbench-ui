@@ -233,6 +233,11 @@ Not implemented:
 - Local LLM analysis.
 - RAG or long-term indexed knowledge store.
 
+Design notes:
+
+- [Hosted Azure Workbench note](docs/hosted-azure-workbench-note.md)
+- [Local LLM analysis spec](docs/local-llm-analysis-spec.md)
+
 ## Settings
 
 Settings are stored locally in `.assurance-workbench-ui.json`, which is ignored by Git.

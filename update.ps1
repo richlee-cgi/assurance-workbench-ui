@@ -28,6 +28,10 @@ function Assert-LastCommandSucceeded {
     }
 }
 
+function Test-IsWindowsHost {
+    return [System.IO.Path]::DirectorySeparatorChar -eq "\"
+}
+
 function Require-CleanRepo {
     param(
         [string] $RepoDir,
@@ -56,7 +60,8 @@ if (-not (Get-Command git -ErrorAction SilentlyContinue)) {
     Fail "git is required but was not found on PATH."
 }
 
-$venvPython = if ($IsWindows) {
+$isWindowsHost = Test-IsWindowsHost
+$venvPython = if ($isWindowsHost) {
     Join-Path $scriptDir ".venv\Scripts\python.exe"
 }
 else {
@@ -88,7 +93,7 @@ Assert-LastCommandSucceeded "assurance-cli install"
 Write-Info ""
 Write-Info "Installed versions:"
 & $venvPython -m pip show assurance-workbench-ui | Select-String "^Version: " | ForEach-Object { "  assurance-workbench-ui " + $_.ToString().Replace("Version: ", "") }
-$assuranceExe = if ($IsWindows) {
+$assuranceExe = if ($isWindowsHost) {
     Join-Path $scriptDir ".venv\Scripts\assurance.exe"
 }
 else {

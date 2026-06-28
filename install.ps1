@@ -34,6 +34,10 @@ function Assert-LastCommandSucceeded {
     }
 }
 
+function Test-IsWindowsHost {
+    return [System.IO.Path]::DirectorySeparatorChar -eq "\"
+}
+
 function Require-Command {
     param([string] $Name)
     if (-not (Get-Command $Name -ErrorAction SilentlyContinue)) {
@@ -180,7 +184,8 @@ Set-Location $InstallDir
 Write-Info "Creating virtual environment if needed"
 Invoke-SelectedPython -PythonCommand $pythonCommand -Arguments @("-m", "venv", ".venv")
 
-$venvPython = if ($IsWindows) {
+$isWindowsHost = Test-IsWindowsHost
+$venvPython = if ($isWindowsHost) {
     Join-Path $InstallDir ".venv\Scripts\python.exe"
 }
 else {
@@ -221,7 +226,7 @@ Write-Info "Before Confluence/Jira evidence, set Atlassian environment variables
 Write-Info "  `$env:ATLASSIAN_BASE_URL = `"https://example.atlassian.net`""
 Write-Info "  `$env:ATLASSIAN_EMAIL = `"you@example.com`""
 Write-Info "  `$env:ATLASSIAN_API_TOKEN = `"...`""
-if ($IsWindows) {
+if ($isWindowsHost) {
     Write-Info ""
     Write-Info "If PowerShell blocks activation, either run:"
     Write-Info "  Set-ExecutionPolicy -Scope CurrentUser RemoteSigned"
