@@ -29,6 +29,7 @@ def test_build_evidence_command_with_selected_sources() -> None:
     command = build_evidence_command(
         EvidenceForm(
             topic="booking allocation",
+            queries=("ADLI", "ADR ADLI"),
             preset="architecture",
             sources=("confluence", "azure"),
             confluence_space="SPACE",
@@ -44,6 +45,10 @@ def test_build_evidence_command_with_selected_sources() -> None:
         "report",
         "evidence-pack",
         "booking allocation",
+        "--query",
+        "ADLI",
+        "--query",
+        "ADR ADLI",
         "--preset",
         "architecture",
         "--confluence-space",
@@ -61,7 +66,7 @@ def test_build_evidence_command_with_selected_sources() -> None:
 
 def test_evidence_form_uses_defaults() -> None:
     form = evidence_form_from_data(
-        {"sources": ["confluence", "jira"], "limit": "20"},
+        {"sources": ["confluence", "jira"], "limit": "20", "queries": "ADLI\nADR ADLI"},
         AppSettings(
             confluence_space="SPACE",
             jira_project="ABC",
@@ -75,6 +80,7 @@ def test_evidence_form_uses_defaults() -> None:
     )
 
     assert form.confluence_space == "SPACE"
+    assert form.queries == ("ADLI", "ADR ADLI")
     assert form.jira_project == "ABC"
     assert form.repo_roots == ("/tmp/dev",)
     assert form.repos == ("service-a",)
@@ -278,6 +284,7 @@ def test_form_from_saved_request_preserves_json_lists() -> None:
     form = form_from_saved_request(
         {
             "topic": "https://github.com/dvsa/dsp-integrations/pull/237",
+            "queries": ["ADLI", "ADR ADLI"],
             "sources": ["code"],
             "repo_roots": ["/Users/rich/dev/dev-work/dvsa-dsp"],
             "repos": ["dsp-integrations"],
@@ -292,6 +299,9 @@ def test_form_from_saved_request_preserves_json_lists() -> None:
 
     assert form.repo_roots == ("/Users/rich/dev/dev-work/dvsa-dsp",)
     assert form.repos == ("dsp-integrations",)
+    assert form.queries == ("ADLI", "ADR ADLI")
+    assert "--query" in command
+    assert command[command.index("--query") + 1] == "ADLI"
     assert "--repo-root" in command
     assert "['/Users/rich/dev/dev-work/dvsa-dsp']" not in command
     assert command[command.index("--repo-root") + 1] == "/Users/rich/dev/dev-work/dvsa-dsp"

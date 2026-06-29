@@ -36,6 +36,7 @@ EVIDENCE_PREVIEW_MAX_SECTIONS = 4
 @dataclass(frozen=True)
 class EvidenceForm:
     topic: str = ""
+    queries: tuple[str, ...] = ()
     preset: str = ""
     sources: tuple[str, ...] = ("confluence", "jira")
     confluence_space: str = ""
@@ -134,6 +135,7 @@ def evidence_form_from_data(data: Any, defaults: AppSettings | None = None) -> E
     defaults = defaults or AppSettings()
     return EvidenceForm(
         topic=str(data.get("topic", "")).strip(),
+        queries=_split_lines_or_commas(data.get("queries") or ""),
         preset=_valid_preset(str(data.get("preset", "")).strip()),
         sources=sources,
         confluence_space=str(data.get("confluence_space") or defaults.confluence_space).strip(),
@@ -159,6 +161,8 @@ def build_evidence_command(form: EvidenceForm) -> list[str]:
     command = ["assurance", "report", "evidence-pack"]
     if form.topic:
         command.append(form.topic)
+    for query in form.queries:
+        command.extend(["--query", query])
     if form.preset:
         command.extend(["--preset", form.preset])
     if "confluence" not in form.sources:

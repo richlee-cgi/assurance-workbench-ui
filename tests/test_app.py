@@ -28,6 +28,7 @@ def test_home_page() -> None:
     assert "Discover repos" in response.text
     assert 'class="primary-button"' in response.text
     assert response.text.count("class=\"info-tooltip\"") >= 9
+    assert "Additional queries" in response.text
     assert "The words are passed together as one topic phrase" in response.text
 
 
@@ -59,6 +60,8 @@ def test_guide_page() -> None:
     assert response.status_code == 200
     assert "User Guide" in response.text
     assert "Topics and presets" in response.text
+    assert "Additional queries" in response.text
+    assert "merges and deduplicates results" in response.text
     assert "GitHub fallback" in response.text
     assert "Refresh cache" in response.text
     assert "class=\"active\">Guide" in response.text
@@ -153,6 +156,7 @@ def test_preview_command_route() -> None:
         "/preview-command",
         data={
             "topic": "booking allocation",
+            "queries": "ADLI\nADR ADLI",
             "preset": "architecture",
             "sources": ["confluence", "azure"],
             "confluence_space": "SPACE",
@@ -168,6 +172,8 @@ def test_preview_command_route() -> None:
     assert response.status_code == 200
     assert "Command preview" in response.text
     assert "booking allocation" in response.text
+    assert "--query ADLI" in response.text
+    assert "ADR ADLI" in response.text
     assert "--preset architecture" in response.text
     assert "--skip-jira" in response.text
     assert "--include-azure" in response.text
