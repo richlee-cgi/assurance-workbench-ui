@@ -51,6 +51,7 @@ def test_build_evidence_command_with_selected_sources() -> None:
         "ADR ADLI",
         "--preset",
         "architecture",
+        "--no-preset-expansion",
         "--confluence-space",
         "SPACE",
         "--skip-jira",
@@ -88,6 +89,13 @@ def test_evidence_form_uses_defaults() -> None:
     assert form.jira_team_field == "customfield_12345"
     assert form.exclude_jira_teams == ("DSP Assurance",)
     assert form.limit == 20
+    assert form.no_preset_expansion is True
+
+
+def test_evidence_form_can_disable_preset_expansion() -> None:
+    form = evidence_form_from_data({"no_preset_expansion": "0"})
+
+    assert form.no_preset_expansion is False
 
 
 def test_build_evidence_command_with_exclusions() -> None:
@@ -128,6 +136,7 @@ def test_build_evidence_command_with_code_source() -> None:
         "report",
         "evidence-pack",
         "booking",
+        "--no-preset-expansion",
         "--skip-confluence",
         "--skip-jira",
         "--include-code",
@@ -292,6 +301,7 @@ def test_form_from_saved_request_preserves_json_lists() -> None:
             "exclude_jira_teams": ["DSP Assurance"],
             "include_prs": True,
             "include_diffs": True,
+            "no_preset_expansion": False,
         }
     )
 
@@ -300,6 +310,8 @@ def test_form_from_saved_request_preserves_json_lists() -> None:
     assert form.repo_roots == ("/Users/rich/dev/dev-work/dvsa-dsp",)
     assert form.repos == ("dsp-integrations",)
     assert form.queries == ("ADLI", "ADR ADLI")
+    assert form.no_preset_expansion is False
+    assert "--no-preset-expansion" not in command
     assert "--query" in command
     assert command[command.index("--query") + 1] == "ADLI"
     assert "--repo-root" in command

@@ -29,6 +29,7 @@ def test_home_page() -> None:
     assert 'class="primary-button"' in response.text
     assert response.text.count("class=\"info-tooltip\"") >= 9
     assert "Additional queries" in response.text
+    assert "Skip preset expansion" in response.text
     assert "The words are passed together as one topic phrase" in response.text
 
 
@@ -166,6 +167,7 @@ def test_preview_command_route() -> None:
             "exclude_jira_teams": "DSP Assurance",
             "limit": "15",
             "refresh": "on",
+            "no_preset_expansion": "1",
         },
     )
 
@@ -175,6 +177,7 @@ def test_preview_command_route() -> None:
     assert "--query ADLI" in response.text
     assert "ADR ADLI" in response.text
     assert "--preset architecture" in response.text
+    assert "--no-preset-expansion" in response.text
     assert "--skip-jira" in response.text
     assert "--include-azure" in response.text
     assert "--azure-resource-group rg" in response.text

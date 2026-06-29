@@ -55,6 +55,7 @@ class EvidenceForm:
     include_comments: bool = False
     refresh: bool = False
     no_cache: bool = False
+    no_preset_expansion: bool = True
 
 
 @dataclass(frozen=True)
@@ -154,6 +155,7 @@ def evidence_form_from_data(data: Any, defaults: AppSettings | None = None) -> E
         include_comments=_as_bool(data.get("include_comments")),
         refresh=_as_bool(data.get("refresh")),
         no_cache=_as_bool(data.get("no_cache")),
+        no_preset_expansion=_as_bool(data.get("no_preset_expansion", "1")),
     )
 
 
@@ -165,6 +167,8 @@ def build_evidence_command(form: EvidenceForm) -> list[str]:
         command.extend(["--query", query])
     if form.preset:
         command.extend(["--preset", form.preset])
+    if form.no_preset_expansion:
+        command.append("--no-preset-expansion")
     if "confluence" not in form.sources:
         command.append("--skip-confluence")
     elif form.confluence_space:
