@@ -6,9 +6,7 @@ param(
 $ErrorActionPreference = "Stop"
 
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
-if (-not $CliDir) {
-    $CliDir = Join-Path (Split-Path -Parent $scriptDir) "assurance-cli"
-}
+$defaultCliDir = Join-Path (Split-Path -Parent $scriptDir) "assurance-cli"
 
 function Write-Info {
     param([string] $Message)
@@ -56,6 +54,28 @@ function Pull-Repo {
     Assert-LastCommandSucceeded "git pull $Name"
 }
 
+function Install-CliDependency {
+    if ($CliDir) {
+        Require-CleanRepo -RepoDir $CliDir -Name "assurance-cli"
+        Pull-Repo -RepoDir $CliDir -Name "assurance-cli"
+        & $venvPython -m pip install --upgrade $CliDir
+        Assert-LastCommandSucceeded "assurance-cli local install"
+        return
+    }
+
+    if (Test-Path (Join-Path $defaultCliDir ".git")) {
+        Require-CleanRepo -RepoDir $defaultCliDir -Name "assurance-cli"
+        Pull-Repo -RepoDir $defaultCliDir -Name "assurance-cli"
+        & $venvPython -m pip install --upgrade $defaultCliDir
+        Assert-LastCommandSucceeded "assurance-cli sibling install"
+        return
+    }
+
+    Write-Info "No sibling assurance-cli checkout found; updating CLI dependency from GitHub main"
+    & $venvPython -m pip install --upgrade --force-reinstall --no-deps "assurance-cli @ git+https://github.com/richlee-cgi/assurance-cli.git@main"
+    Assert-LastCommandSucceeded "assurance-cli GitHub install"
+}
+
 if (-not (Get-Command git -ErrorAction SilentlyContinue)) {
     Fail "git is required but was not found on PATH."
 }
@@ -75,9 +95,7 @@ if (-not (Test-Path $venvPython)) {
 }
 
 Require-CleanRepo -RepoDir $scriptDir -Name "Workbench"
-Require-CleanRepo -RepoDir $CliDir -Name "assurance-cli"
 
-Pull-Repo -RepoDir $CliDir -Name "assurance-cli"
 Pull-Repo -RepoDir $scriptDir -Name "Workbench"
 
 Set-Location $scriptDir
@@ -87,8 +105,7 @@ Write-Info "Updating Workbench virtualenv"
 Assert-LastCommandSucceeded "pip upgrade"
 & $venvPython -m pip install -e ".[dev]"
 Assert-LastCommandSucceeded "Workbench install"
-& $venvPython -m pip install --upgrade $CliDir
-Assert-LastCommandSucceeded "assurance-cli install"
+Install-CliDependency
 
 Write-Info ""
 Write-Info "Installed versions:"

@@ -29,6 +29,17 @@ fail() {
   exit 1
 }
 
+install_cli_dependency() {
+  if [ -n "${ASSURANCE_CLI_DIR:-}" ]; then
+    info "Installing assurance-cli from local checkout: $ASSURANCE_CLI_DIR"
+    .venv/bin/python -m pip install --upgrade "$ASSURANCE_CLI_DIR"
+    return
+  fi
+
+  info "Installing/updating assurance-cli from GitHub main"
+  .venv/bin/python -m pip install --upgrade --force-reinstall --no-deps "assurance-cli @ git+https://github.com/richlee-cgi/assurance-cli.git@main"
+}
+
 require_command() {
   command -v "$1" >/dev/null 2>&1 || fail "$1 is required but was not found on PATH."
 }
@@ -173,6 +184,7 @@ info "Creating virtual environment if needed"
 info "Installing/updating Workbench and CLI dependency"
 .venv/bin/python -m pip install --upgrade pip
 .venv/bin/python -m pip install -e ".[dev]"
+install_cli_dependency
 
 info "Checking optional provider CLIs"
 report_optional_tool az

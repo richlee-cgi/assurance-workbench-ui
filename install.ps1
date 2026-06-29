@@ -34,6 +34,19 @@ function Assert-LastCommandSucceeded {
     }
 }
 
+function Install-CliDependency {
+    if ($env:ASSURANCE_CLI_DIR) {
+        Write-Info "Installing assurance-cli from local checkout: $env:ASSURANCE_CLI_DIR"
+        & $venvPython -m pip install --upgrade $env:ASSURANCE_CLI_DIR
+        Assert-LastCommandSucceeded "assurance-cli local install"
+        return
+    }
+
+    Write-Info "Installing/updating assurance-cli from GitHub main"
+    & $venvPython -m pip install --upgrade --force-reinstall --no-deps "assurance-cli @ git+https://github.com/richlee-cgi/assurance-cli.git@main"
+    Assert-LastCommandSucceeded "assurance-cli GitHub install"
+}
+
 function Test-IsWindowsHost {
     return [System.IO.Path]::DirectorySeparatorChar -eq "\"
 }
@@ -200,6 +213,7 @@ Write-Info "Installing/updating Workbench and CLI dependency"
 Assert-LastCommandSucceeded "pip upgrade"
 & $venvPython -m pip install -e ".[dev]"
 Assert-LastCommandSucceeded "pip install"
+Install-CliDependency
 
 Write-Info "Checking optional provider CLIs"
 Report-OptionalTool az

@@ -38,7 +38,7 @@ Windows PowerShell:
 irm https://raw.githubusercontent.com/richlee-cgi/assurance-workbench-ui/main/install.ps1 | iex
 ```
 
-The installer checks Python 3.11+ and Git, clones or updates the Workbench repo when needed, creates `.venv`, installs the app and CLI dependency, and reports whether optional provider CLIs (`az`, `gh`, `pac`) are available. It does not install optional provider CLIs. If Atlassian environment variables are missing, it can optionally prompt for them and persist them for the current user.
+The installer checks Python 3.11+ and Git, clones or updates the Workbench repo when needed, creates `.venv`, installs the app and refreshes the `assurance-cli` dependency from GitHub main. It reports whether optional provider CLIs (`az`, `gh`, `pac`) are available. It does not install optional provider CLIs. If Atlassian environment variables are missing, it can optionally prompt for them and persist them for the current user.
 
 Manual setup:
 
@@ -168,7 +168,7 @@ http://127.0.0.1:8765
 
 ## Updating
 
-Use the update script when you want to pull the latest Workbench and CLI changes. It updates both repos, refreshes the Workbench virtualenv, reinstalls `assurance-cli`, prints installed versions, and asks you to restart the local server.
+Use the update script when you want to pull the latest Workbench and CLI changes. It refreshes the Workbench virtualenv, reinstalls `assurance-cli`, prints installed versions, and asks you to restart the local server.
 
 Mac/Linux:
 
@@ -186,14 +186,16 @@ cd "$HOME\dev\assurance-workbench-ui"
 .\run.ps1
 ```
 
-The script expects `assurance-cli` to be a sibling checkout of `assurance-workbench-ui`, for example:
+For normal users with only this UI repo cloned, the script updates `assurance-cli` from GitHub main. A separate `assurance-cli` checkout is not required.
+
+For local development across both repos, place `assurance-cli` as a sibling checkout of `assurance-workbench-ui`, for example:
 
 ```text
 ~/dev/assurance-cli
 ~/dev/assurance-workbench-ui
 ```
 
-Override the CLI path when needed:
+When a sibling checkout exists, the update script pulls and installs that local checkout. Override the CLI path when needed:
 
 ```bash
 ASSURANCE_CLI_DIR="$HOME/dev/dev-rich/assurance-cli" ./update.sh
@@ -203,7 +205,7 @@ ASSURANCE_CLI_DIR="$HOME/dev/dev-rich/assurance-cli" ./update.sh
 .\update.ps1 -CliDir "$HOME\dev\dev-rich\assurance-cli"
 ```
 
-The update scripts use `git pull --ff-only` and stop if either repo has local changes. Commit, stash or discard local changes first.
+The update scripts use `git pull --ff-only` and stop if the UI repo has local changes. If a local CLI checkout is used, it must also be clean. Commit, stash or discard local changes first.
 
 ## Current Scope
 
