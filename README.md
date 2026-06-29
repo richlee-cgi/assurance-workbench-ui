@@ -261,6 +261,8 @@ Leave `assurance_path` blank to use the `assurance-cli` dependency installed wit
 
 ## Evidence Form Options
 
+`Additional queries` accepts one search term per line. Use it for known names, acronyms, decision IDs, document titles or authoritative evidence terms that the main topic may miss, for example `ADLI`, `ADR ADLI`, `KDD DVLA` or `OP008`. The CLI runs each query against selected text-search sources, then merges and deduplicates the results. The generated evidence pack includes a `Search Strategy` section showing the terms used.
+
 Configured exclusions are applied to evidence runs automatically. `Exclude Confluence from parent` accepts page IDs or Confluence page URLs. `Excluded Jira teams` uses exact team names and the default Jira `Team` field.
 
 `Code repositories` enables local Git repository evidence. The UI passes selected repo roots and repo names to `assurance report evidence-pack --include-code`, so the CLI can search local files, recent commits and repository metadata.
